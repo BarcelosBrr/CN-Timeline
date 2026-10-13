@@ -1,0 +1,12 @@
+{
+  "description": "Opcional: episódios especiais por temporada/episódio. Use IDs corretos; valores desta lista são apenas exemplos de formato, não precisam ser incluídos nos dados.",
+  "episodes": [],
+  "_example": {
+    "imdbId": "tt1942683",
+    "season": 2,
+    "episode": 7,
+    "tags": [
+      "halloween"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');
+const p=require('../public/planner.js').CnPlanner;
+const names=['Apenas um Show','O Incrível Mundo de Gumball','Hora de Aventura','Steven Universo','Irmão do Jorel','Jovens Titãs em Ação','Ursos sem Curso','Pokémon','O Mundo de Greg','Victor e Valentino'];
+const catalog=names.map((show,i)=>({id:'test:'+i,show,source:'stremio',kind:'episode',path:'stremio:tt'+(1230000+i)+':1:1',imdbId:'tt'+(1230000+i),duration:660,releaseDate:'2018-01-01',season:1,episode:1,enabled:true,streamVerifiedByShow:true}));
+const a=p.generate(new Date(2019,9,11,12),2019,catalog);
+assert.equal(a.entries.at(-1).end,86400);
+const scheduled=new Set(a.entries.filter(x=>x.asset?.source==='stremio').map(x=>x.asset.show));
+assert.ok(scheduled.size>=5,'deveria variar os desenhos quando 10 estão disponíveis: '+[...scheduled]);
+const b=p.generate(new Date(2019,9,11,12),2019,catalog.map(x=>({...x,streamVerifiedByShow:false})));
+assert.ok(b.entries.filter(x=>x.asset?.source==='stremio').length>20,'a grade deve usar metadados mesmo enquanto os addons estão sendo verificados');
+assert.ok(b.entries.filter(x=>x.asset?.source==='stremio').every(x=>!x.asset.streamVerifiedByShow),'indicar fonte pendente em separado');
+console.log('v1.01 programação coerente: '+scheduled.size+' séries distintas, total '+a.entries.length+' faixas');

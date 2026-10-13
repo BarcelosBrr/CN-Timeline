@@ -1,0 +1,2 @@
+ORGANIZACAO v0.5: ano na pasta de vinhetas/chamadas/promos/anuncios, e no nome de episodios.
+Leia o README.md para exemplos.

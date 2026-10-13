@@ -1,0 +1,104 @@
+{
+  "films": {
+    "tt2235542": {
+      "available": false,
+      "checkedAt": 1791905991.9016242,
+      "provider": null
+    },
+    "tt2423422": {
+      "available": false,
+      "checkedAt": 1791905994.252761,
+      "provider": null
+    },
+    "tt3025994": {
+      "available": false,
+      "checkedAt": 1791905995.263319,
+      "provider": null
+    },
+    "tt3919322": {
+      "available": false,
+      "checkedAt": 1791906006.2576036,
+      "provider": null
+    },
+    "tt4006794": {
+      "available": false,
+      "checkedAt": 1791906009.5450447,
+      "provider": null
+    },
+    "tt1490017": {
+      "available": false,
+      "checkedAt": 1791906010.5317688,
+      "provider": null
+    },
+    "tt4189260": {
+      "available": false,
+      "checkedAt": 1791906011.306931,
+      "provider": null
+    },
+    "tt4717798": {
+      "available": false,
+      "checkedAt": 1791906012.3688948,
+      "provider": null
+    },
+    "tt4215766": {
+      "available": false,
+      "checkedAt": 1791906013.5981655,
+      "provider": null
+    },
+    "tt5836262": {
+      "available": false,
+      "checkedAt": 1791906014.5367248,
+      "provider": null
+    },
+    "tt5251438": {
+      "available": false,
+      "checkedAt": 1791906015.5164573,
+      "provider": null
+    },
+    "tt5548284": {
+      "available": false,
+      "checkedAt": 1791906016.3925834,
+      "provider": null
+    },
+    "tt4116284": {
+      "available": false,
+      "checkedAt": 1791906017.4189782,
+      "provider": null
+    },
+    "tt3014284": {
+      "available": false,
+      "checkedAt": 1791906018.437554,
+      "provider": null
+    },
+    "tt6182908": {
+      "available": false,
+      "checkedAt": 1791906019.730817,
+      "provider": null
+    },
+    "tt10327712": {
+      "available": false,
+      "checkedAt": 1791906020.7764015,
+      "provider": null
+    },
+    "tt3513498": {
+      "available": false,
+      "checkedAt": 1791906021.6572533,
+      "provider": null
+    },
+    "tt12093878": {
+      "available": false,
+      "checkedAt": 1791906022.3782203,
+      "provider": null
+    },
+    "tt3152592": {
+      "available": false,
+      "checkedAt": 1791906023.2516115,
+      "provider": null
+    },
+    "tt2162709": {
+      "available": true,
+      "checkedAt": 1791907614.8570797,
+      "provider": "FenixFlix"
+    }
+  }
+}

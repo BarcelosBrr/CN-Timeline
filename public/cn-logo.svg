@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 158" role="img" aria-label="Cartoon Network">
+<rect width="260" height="158" fill="white"/>
+<rect width="130" height="125" fill="black"/>
+<rect x="130" width="130" height="125" fill="white"/>
+<text x="65" y="105" font-family="Arial Black,Arial,sans-serif" text-anchor="middle" font-size="110" font-weight="900" fill="white">C</text>
+<text x="195" y="105" font-family="Arial Black,Arial,sans-serif" text-anchor="middle" font-size="110" font-weight="900" fill="black">N</text>
+<text x="130" y="148" font-family="Arial Black,Arial,sans-serif" text-anchor="middle" font-size="25" font-weight="1000" letter-spacing="-0.1">CARTOON NETWORK</text>
+</svg>
