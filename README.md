@@ -1,10 +1,6 @@
-# Cartoon Timeline v1.02.1 — Catálogo de exibição e disponibilidade por episódio
+# Cartoon Timeline - Atualização v1.02.1
 
-Atualização incremental da v1.02. **Não apaga as 50 séries configuradas, o arquivo de episódios, os vídeos locais nem os addons.**
-
-## Por que a grade diz "Fonte indisponível"?
-
-A importação da TVmaze/Cinemeta cria o **índice histórico de metadados**, mas não fornece o vídeo. Um show com 76 episódios indexados pode ter zero episódios reproduzíveis no momento. O addon pode devolver apenas torrent, URL inválida, stream bloqueado, fonte temporariamente fora do ar ou um episódio diferente.
+Atualização incremental da v1.02.1. **Não apaga as 50 séries configuradas, o arquivo de episódios, os vídeos locais nem os addons.**
 
 ## Alterações
 
@@ -15,8 +11,6 @@ A importação da TVmaze/Cinemeta cria o **índice histórico de metadados**, ma
 5. Um episódio recentemente identificado como sem fonte deixa de ser escolhido para a **próxima geração** da grade, sem impedir outros episódios da série. A marca negativa expira em 20 minutos, para que falhas temporárias não excluam conteúdo permanentemente.
 6. Episódios reproduzidos têm maior prioridade no sorteio do que URLs candidatas, que têm prioridade sobre episódios sem verificação. Rejeitar um arquivo errado apaga sua confirmação anterior.
 7. A biblioteca distingue episódio `REPRODUZIDO`, `FONTE CANDIDATA` e `A VERIFICAR`.
-
-**Importante:** URLs candidatas não são garantia de reprodução no navegador. Para não repetir o erro histórico da grade vazia, episódios ainda não testados **continuam como candidatos**, até haver evidência positiva ou negativa. Esta atualização não elimina falhas dos provedores externos.
 
 ## Instalação
 
