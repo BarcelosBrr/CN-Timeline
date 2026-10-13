@@ -1,0 +1,10 @@
+{
+  "descricao": "Referências de pesquisa SOMENTE. Não são URLs de vídeo direto; não são incluídas no player automaticamente.",
+  "prioridades": [
+    {"show": "O Incrível Mundo de Gumball", "titulo": "Referência nostálgica enviada pelo usuário", "url": "https://www.youtube.com/watch?v=kFvEMnNvKAg", "ano": null, "categoria": "verificar"},
+    {"show": "O Incrível Mundo de Gumball", "titulo": "VEM AÍ de Gumball — CHECK it! 3.0", "url": "https://www.youtube.com/watch?v=-lRWunOwej0", "ano": 2015, "categoria": "promo"},
+    {"show": "Cine Cartoon", "titulo": "Bumpers do Cine Cartoon 2015–2020", "url": "https://www.youtube.com/watch?v=p1QCO_z_BOM", "ano": null, "categoria": "bumper"},
+    {"show": "HAHAHA", "titulo": "Intervalo brasileiro 09/05/2015", "url": "https://www.youtube.com/watch?v=XTBJrdMWlzM", "ano": 2015, "categoria": "referencia"},
+    {"show": "Especial de Natal", "titulo": "Bumpers de Natal 2017", "url": "https://www.youtube.com/watch?v=2uNBwbNPF1Q", "ano": 2017, "categoria": "bumper"}
+  ]
+}

@@ -1,0 +1,274 @@
+{
+  "enabled": true,
+  "_note": "Ampliação v0.8.5: pesquisa títulos adicionais na TVmaze e registra apenas correspondências seguras com IMDb. As datas importadas são originais; use catálogo para datas brasileiras específicas. A disponibilidade depende do addon.",
+  "series": [
+    {
+      "show": "O Incrível Mundo de Gumball",
+      "tvmazeId": 3134,
+      "imdbId": "tt1942683",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11
+    },
+    {
+      "show": "Apenas um Show",
+      "tvmazeId": 868,
+      "imdbId": "tt1710308",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11
+    },
+    {
+      "show": "Ursos sem Curso",
+      "tvmazeId": 2612,
+      "imdbId": "tt4839610",
+      "earliestBR": "2015-08-24",
+      "episodeMinutes": 11
+    },
+    {
+      "show": "Hora de Aventura",
+      "searchName": "Adventure Time",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Steven Universo",
+      "searchName": "Steven Universe",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Irmão do Jorel",
+      "searchName": "Jorel's Brother",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Clarêncio, o Otimista",
+      "searchName": "Clarence",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Jovens Titãs em Ação",
+      "searchName": "Teen Titans Go!",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Titio Avô",
+      "searchName": "Uncle Grandpa",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "O Show de Tom e Jerry",
+      "searchName": "The Tom and Jerry Show",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Que Legal, Scooby-Doo!",
+      "searchName": "Be Cool, Scooby-Doo!",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 22,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Johnny Test",
+      "searchName": "Johnny Test",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Ben 10: Omniverse",
+      "searchName": "Ben 10: Omniverse",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 22,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Pokémon",
+      "searchName": "Pokémon",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 22,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Dragon Ball Z Kai",
+      "searchName": "Dragon Ball Z Kai",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 24,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Sonic Boom",
+      "searchName": "Sonic Boom",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Supernoobs",
+      "searchName": "Supernoobs",
+      "earliestBR": "2015-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "As Meninas Superpoderosas",
+      "searchName": "The Powerpuff Girls",
+      "earliestBR": "2016-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar.",
+      "originalPremiereYear": 2016
+    },
+    {
+      "show": "Poderosas Magiespadas",
+      "searchName": "Mighty Magiswords",
+      "earliestBR": "2016-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Ben 10",
+      "searchName": "Ben 10",
+      "earliestBR": "2017-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar.",
+      "originalPremiereYear": 2016
+    },
+    {
+      "show": "Dragon Ball Super",
+      "searchName": "Dragon Ball Super",
+      "earliestBR": "2017-01-01",
+      "episodeMinutes": 24,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "OK K.O.! Vamos Ser Heróis",
+      "searchName": "OK K.O.! Let's Be Heroes",
+      "earliestBR": "2017-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Oswaldo",
+      "searchName": "Oswaldo",
+      "earliestBR": "2017-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Bunnicula",
+      "searchName": "Bunnicula",
+      "earliestBR": "2017-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Tá Chovendo Hambúrguer: A Série",
+      "searchName": "Cloudy with a Chance of Meatballs",
+      "earliestBR": "2017-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "O Mundo de Greg",
+      "searchName": "Craig of the Creek",
+      "earliestBR": "2018-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Acampamento de Verão",
+      "searchName": "Summer Camp Island",
+      "earliestBR": "2018-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Maçã e Cebola",
+      "searchName": "Apple & Onion",
+      "earliestBR": "2018-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Unigata!",
+      "searchName": "Unikitty!",
+      "earliestBR": "2018-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "DC Super Hero Girls",
+      "searchName": "DC Super Hero Girls",
+      "earliestBR": "2019-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Victor e Valentino",
+      "searchName": "Victor and Valentino",
+      "earliestBR": "2019-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Mao Mao: Heróis de Coração Puro",
+      "searchName": "Mao Mao: Heroes of Pure Heart",
+      "earliestBR": "2019-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Trem Infinito",
+      "searchName": "Infinity Train",
+      "earliestBR": "2019-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Steven Universo Futuro",
+      "searchName": "Steven Universe Future",
+      "earliestBR": "2019-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Scooby-Doo e Convidados",
+      "searchName": "Scooby-Doo and Guess Who?",
+      "earliestBR": "2019-01-01",
+      "episodeMinutes": 22,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "ThunderCats Roar",
+      "searchName": "ThunderCats Roar",
+      "earliestBR": "2020-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Elliott, o Terráqueo",
+      "searchName": "Elliott from Earth",
+      "earliestBR": "2021-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    },
+    {
+      "show": "Vilanesco",
+      "searchName": "Villainous",
+      "earliestBR": "2021-01-01",
+      "episodeMinutes": 11,
+      "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
+    }
+  ]
+}

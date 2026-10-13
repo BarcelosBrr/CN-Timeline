@@ -1,0 +1,114 @@
+{
+  "Ben 10": {
+    "tvmazeId": 2,
+    "imdbId": "tt6148376"
+  },
+  "Adventure Time": {
+    "tvmazeId": 290,
+    "imdbId": "tt1305826"
+  },
+  "Steven Universe": {
+    "tvmazeId": 1615,
+    "imdbId": "tt3061046"
+  },
+  "Clarence": {
+    "tvmazeId": 5617,
+    "imdbId": "tt3061050"
+  },
+  "Teen Titans Go!": {
+    "tvmazeId": 706,
+    "imdbId": "tt2771780"
+  },
+  "Uncle Grandpa": {
+    "tvmazeId": 1617,
+    "imdbId": "tt3042608"
+  },
+  "The Tom and Jerry Show": {
+    "tvmazeId": 4296,
+    "imdbId": "tt3559124"
+  },
+  "Be Cool, Scooby-Doo!": {
+    "tvmazeId": 5682,
+    "imdbId": "tt4215734"
+  },
+  "Johnny Test": {
+    "tvmazeId": 12444,
+    "imdbId": "tt0454349"
+  },
+  "Ben 10: Omniverse": {
+    "tvmazeId": 1264,
+    "imdbId": "tt2293002"
+  },
+  "Pokémon": {
+    "tvmazeId": 590,
+    "imdbId": "tt0168366"
+  },
+  "Sonic Boom": {
+    "tvmazeId": 489,
+    "imdbId": "tt3232262"
+  },
+  "Supernoobs": {
+    "tvmazeId": 9950,
+    "imdbId": "tt4033696"
+  },
+  "The Powerpuff Girls": {
+    "tvmazeId": 6771,
+    "imdbId": "tt4718304"
+  },
+  "Mighty Magiswords": {
+    "tvmazeId": 20720,
+    "imdbId": "tt4847134"
+  },
+  "Dragon Ball Super": {
+    "tvmazeId": 2368,
+    "imdbId": "tt4644488"
+  },
+  "OK K.O.! Let's Be Heroes": {
+    "tvmazeId": 26635,
+    "imdbId": "tt6965802"
+  },
+  "Bunnicula": {
+    "tvmazeId": 6743,
+    "imdbId": "tt5444412"
+  },
+  "Cloudy with a Chance of Meatballs": {
+    "tvmazeId": 25277,
+    "imdbId": "tt4123482"
+  },
+  "Craig of the Creek": {
+    "tvmazeId": 26644,
+    "imdbId": "tt7713450"
+  },
+  "Summer Camp Island": {
+    "tvmazeId": 26643,
+    "imdbId": "tt8146760"
+  },
+  "Apple & Onion": {
+    "tvmazeId": 17005,
+    "imdbId": "tt8019790"
+  },
+  "Unikitty!": {
+    "tvmazeId": 32984,
+    "imdbId": "tt6874502"
+  },
+  "DC Super Hero Girls": {
+    "tvmazeId": 40884,
+    "imdbId": "tt9628244"
+  },
+  "Infinity Train": {
+    "tvmazeId": 39945,
+    "imdbId": "tt8146754"
+  },
+  "Scooby-Doo and Guess Who?": {
+    "tvmazeId": 36845,
+    "imdbId": "tt8456094"
+  },
+  "ThunderCats Roar": {
+    "tvmazeId": 40150,
+    "imdbId": "tt8435344"
+  },
+  "Villainous": {
+    "tvmazeId": 32303,
+    "imdbId": "tt7049818"
+  }
+}
