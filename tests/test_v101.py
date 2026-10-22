@@ -26,6 +26,12 @@ class TestV101(unittest.TestCase):
         self.assertTrue(server.stream_label_is_future_or_spinoff('Regular Show The Lost Tapes 2026','Apenas um Show',2019))
         self.assertFalse(server.stream_label_is_future_or_spinoff('Regular Show S01E03 720p','Apenas um Show',2019))
 
+    def test_stream_label_must_match_cartoon_identity_and_episode(self):
+        self.assertFalse(server.stream_label_matches_expected_episode('Dexter S01E01 720p','O Laboratório de Dexter',1,1))
+        self.assertTrue(server.stream_label_matches_expected_episode('O Laboratório de Dexter T01 EP01 720p','O Laboratório de Dexter',1,1))
+        self.assertFalse(server.stream_label_matches_expected_episode('Dragon Ball Super T05 EP25 1080p','Dragon Ball Super',5,26,102))
+        self.assertTrue(server.stream_label_matches_expected_episode('Dragon Ball Super T05 EP26 (Ep. 102) 1080p','Dragon Ball Super',5,26,102))
+
     def test_verification_uses_synced_episodes_not_only_config_ids(self):
         import tempfile,json
         from pathlib import Path

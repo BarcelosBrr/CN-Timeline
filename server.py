@@ -6,6 +6,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit, quote
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import argparse
+import gzip
 import json
 import os
 import mimetypes
@@ -43,6 +44,7 @@ SHOW_ALIASES = {
         'apenas_um_show': 'Apenas um Show', 'ursos_sem_curso': 'Ursos sem Curso',
         'hora_de_aventura': 'Hora de Aventura', 'irmao_do_jorel': 'Irmão do Jorel',
         'jovens_titas_em_acao': 'Jovens Titãs em Ação',
+        'os_jovens_titas_em_acao': 'Jovens Titãs em Ação',
         'steven_universo': 'Steven Universo', 'ben_10': 'Ben 10',
         'clarencio_o_otimista': 'Clarêncio, o Otimista',
         'as_meninas_superpoderosas': 'As Meninas Superpoderosas',
@@ -50,6 +52,7 @@ SHOW_ALIASES = {
         'drama_total_so_estrelas': 'Drama Total Só Estrelas',
         'mad': 'MAD',
         'o_show_de_tom_e_jerry': 'O Show de Tom e Jerry',
+        'tom_e_jerry': 'O Show de Tom e Jerry',
         'outra_semana_no_cartoon': 'Outra Semana no Cartoon',
         'sonic_boom': 'Sonic BOOM',
         'team_hotwheels': 'Team Hotwheels',
@@ -58,9 +61,20 @@ SHOW_ALIASES = {
         'bunnicula_o_vampiro_coelho': 'Bunnicula, o Vampiro Coelho',
         'dragon_ball_super': 'Dragon Ball Super',
         'o_laboratorio_de_dexter': 'O Laboratório de Dexter',
+        'laboratorio_de_dexter': 'O Laboratório de Dexter',
+        'knd': 'KND: A Turma do Bairro',
+        'knd_a_turma_do_bairro': 'KND: A Turma do Bairro',
         'oswaldo': 'Oswaldo',
         'unigata': 'Unigata',
         'que_legal_scooby_doo': "Que Legal, Scooby-Doo!",
+        'historietas_assombradas_para_criancas_malcriadas': 'Historietas Assombradas',
+        'historietas_assombradas': 'Historietas Assombradas',
+        'mao_mao': 'Mao Mao: Heróis de Coração Puro',
+        'o_mundo_de_greg': 'O Mundo de Greg',
+        'acampamento_de_verao': 'Acampamento de Verão',
+        'dc_super_hero_girls': 'DC Super Hero Girls',
+        'victor_e_valentino': 'Victor e Valentino',
+        'villanesco': 'Vilanesco',
 }
 BLOCK_ALIASES = {
     'cinecartoon':'cine','cine_cartoon':'cine','herois':'herois',
@@ -384,8 +398,6 @@ def make_catalog():
     for movie in (read_json('filmes_cine_cartoon.json') or {}).get('titles',[]):
         if not isinstance(movie,dict):continue
         imdb=str(movie.get('imdbId',''))
-        state=movie_status.get(imdb)
-        if not isinstance(state,dict) or state.get('available') is not True:continue
         release=int(movie.get('releaseYear',0))
         if release<1900 or release>2021:continue
         duration=observed.get('stremio:movie:'+imdb,movie.get('duration'))
@@ -400,7 +412,10 @@ def make_catalog():
           'firstCNAiredYear':movie.get('firstCNAiredYear',release),
           'firstCNAiredDate':movie.get('firstCNAiredDate'),
           'firstCNAiredYear':int(movie.get('firstCNAiredYear') or release),
-          'years':[],'block':'cine','enabled':True,'streamCatalogChecked':True,'event':'normal',
+          'years':[],'block':'cine','enabled':True,
+          'streamCatalogChecked':bool(isinstance(movie_status.get(imdb),dict) and movie_status.get(imdb,{}).get('available') is True),
+          'availabilityPending':not bool(isinstance(movie_status.get(imdb),dict) and movie_status.get(imdb,{}).get('available') is True),
+          'event':'normal',
           'seasonTags':['halloween'] if movie.get('eventHint')=='halloween' else []})
     return entries
 
@@ -567,6 +582,15 @@ def stream_is_html5_candidate(stream):
     return True
 
 
+def stream_codec_rank(label,url):
+    """Prefer codecs that Chromium/Edge usually play inside <video>."""
+    text=unicodedata.normalize('NFKD',(str(label)+' '+unquote(urlsplit(str(url)).path)).lower()).encode('ascii','ignore').decode()
+    if re.search(r'\b(?:h264|h\.264|avc|x264)\b',text):return 0
+    if re.search(r'\b(?:h265|h\.265|hevc|x265|10bit|10-bit|hdr|av1)\b',text):return 5
+    if re.search(r'\b(?:vp9|webm)\b',text):return 2
+    return 1
+
+
 def source_fingerprint(url):
     """Identifica URL sem guardar query, tokens ou caminho em texto."""
     try:
@@ -626,6 +650,47 @@ def stream_label_is_future_or_spinoff(label,show,year):
     return bool(years and virtual_year in range(2015,2022) and min(years)>virtual_year)
 
 
+def stream_label_matches_expected_episode(label,show,season,episode,absolute_episode=None):
+    """Reject obvious wrong-title or wrong-number streams before the browser opens them."""
+    norm=unicodedata.normalize('NFKD',str(label).lower()).encode('ascii','ignore').decode()
+    norm=re.sub(r'[^a-z0-9]+',' ',norm).strip()
+    expected=canon_show(show)
+    if expected=='O Laboratório de Dexter':
+        if re.search(r'\bdexter\b',norm) and not re.search(r'\blaboratorio\b|\blaboratory\b|\bdee dee\b|\bdial m\b',norm):
+            return False
+    elif expected=='Dragon Ball Super':
+        if 'dragon ball' in norm and 'super' not in norm:
+            return False
+    elif expected=='Ben 10':
+        if 'ben 10 omniverse' in norm or 'ultimate alien' in norm or re.search(r'\bben 10 2005\b',norm):
+            return False
+    elif expected=='Ben 10: Omniverse':
+        if 'ben 10' in norm and 'omniverse' not in norm:
+            return False
+    explicit=[]
+    for match in re.finditer(r'\b(?:s|t|temporada)\s*0*(\d{1,3})\s*(?:e|ep|episodio)\s*0*(\d{1,4})\b',norm):
+        explicit.append((int(match.group(1)),int(match.group(2))))
+    for match in re.finditer(r'\b0*(\d{1,3})x0*(\d{1,4})\b',norm):
+        explicit.append((int(match.group(1)),int(match.group(2))))
+    if explicit:
+        allowed={(int(season),int(episode))}
+        try:
+            abs_ep=int(absolute_episode or 0)
+            if abs_ep>0:allowed.add((1,abs_ep))
+        except (TypeError,ValueError):
+            pass
+        if not any(pair in allowed for pair in explicit):
+            return False
+    try:
+        abs_ep=int(absolute_episode or 0)
+    except (TypeError,ValueError):
+        abs_ep=0
+    absolute_mentions=[int(x) for x in re.findall(r'\bep\s*\.?\s*0*(\d{1,4})\b',norm)]
+    if abs_ep and absolute_mentions and abs_ep not in absolute_mentions and (int(season),int(episode)) not in explicit:
+        return False
+    return True
+
+
 def title_identity_known(imdb,show):
     if not show:return True
     target=canon_show(show)
@@ -638,7 +703,7 @@ def title_identity_known(imdb,show):
     return any(x.get('imdbId')==imdb and canon_show(x.get('show',''))==target for x in
                ((read_json('stremio_episodios.json') or {}).get('media',[])) if isinstance(x,dict))
 
-def resolve_stremio(imdb,season=None,episode=None,kind='episode',exclude_providers=None,expected_show=None,selected_year=None,background=False):
+def resolve_stremio(imdb,season=None,episode=None,kind='episode',exclude_providers=None,expected_show=None,selected_year=None,background=False,absolute_episode=None):
     sources=stremio_sources()
     if kind=='episode' and expected_show and not title_identity_known(imdb,expected_show):
         return {'ok':False,'reason':'Série/IMDb não correspondem ao cadastro; evitando conteúdo de outra produção','attempts':[]}
@@ -688,7 +753,11 @@ def resolve_stremio(imdb,season=None,episode=None,kind='episode',exclude_provide
             if isinstance(manifest,dict) and not stream_manifest_ok(manifest,stype,imdb):
                 return None,{'addon':addon['name'],'status':'Não aceita este ID/tipo'}
             endpoint=addon['base']+'stream/'+stype+'/'+quote(video_id,safe=':')+'.json'
-            payload=safe_json_get(endpoint,timeout=5)
+            # Addons de busca podem levar mais de cinco segundos para consultar
+            # provedores upstream. Um limite tão curto marcava séries/filmes
+            # como sem fonte em conexões lentas, embora a consulta ainda estivesse
+            # em andamento. As chamadas são paralelas e limitadas pelo pool.
+            payload=safe_json_get(endpoint,timeout=12)
             streams=payload.get('streams',[]) if isinstance(payload,dict) else []
             if not isinstance(streams,list):streams=[]
             directs=[s for s in streams if stream_is_html5_candidate(s)]
@@ -704,15 +773,20 @@ def resolve_stremio(imdb,season=None,episode=None,kind='episode',exclude_provide
                 if source_rejection_key(imdb,season,episode,kind,addon['name'],url) in denied:continue
                 label=' '.join(str(st.get(k) or '') for k in ('name','title','description','year','releaseYear','releaseDate'))+' '+unquote(urlsplit(url).path)
                 if kind=='episode' and stream_label_is_future_or_spinoff(label,expected_show,selected_year):continue
+                if kind=='episode' and not stream_label_matches_expected_episode(label,expected_show,season,episode,absolute_episode):continue
                 fmt='hls' if urlsplit(url).path.lower().endswith('.m3u8') else 'video'
                 label=str(st.get('name',''))+' '+str(st.get('title',''))
                 found=re.search(r'(?i)\b(2160|1080|720|480|360)p?\b|\b(4k|sd)\b',label)
                 quality=((found.group(1) or found.group(2)).lower() if found else 'unknown')
-                candidates.append({'url':url,'format':fmt,'quality':quality,'sourceTitle':label[:160]})
+                codec_rank=stream_codec_rank(label,url)
+                candidates.append({'url':url,'format':fmt,'quality':quality,
+                    'codecRank':codec_rank,
+                    'compatibility':'preferida' if codec_rank==0 else 'incerta' if codec_rank<5 else 'possivelmente incompatível',
+                    'sourceTitle':label[:160]})
             # Prefere 720p para reduzir travamentos; conserva a ordem original
             # quando o addon não informa qualidade. HLS ajusta bitrate sozinho.
             ranking={'720':0,'1080':1,'unknown':2,'480':3,'sd':3,'360':4,'2160':5,'4k':5}
-            candidates.sort(key=lambda c:ranking.get(c.get('quality'),2))
+            candidates.sort(key=lambda c:(c.get('codecRank',1),ranking.get(c.get('quality'),2)))
             if candidates:
                 first=candidates[0]
                 answer={'ok':True,'provider':addon['name'],'url':first['url'],
@@ -884,6 +958,7 @@ def _parse_cinemeta_episodes(sh, imdb):
     videos=obj.get('videos',[]) if isinstance(obj,dict) else []
     if not isinstance(videos,list):raise ValueError('Cinemeta: lista de episódios ausente')
     records=[]
+    absolute=0
     for video in videos[:1600]:
         if not isinstance(video,dict):continue
         released=str(video.get('released') or '')[:10]
@@ -895,6 +970,7 @@ def _parse_cinemeta_episodes(sh, imdb):
         except (ValueError,TypeError):continue
         if runtime>90:runtime/=60  # providers sometimes report seconds
         if not 2<=runtime<=90:runtime=float(sh.get('episodeMinutes') or 11)
+        absolute+=1
         first=max(released,str(sh.get('earliestBR') or '2015-01-01'))
         if first>'2021-12-31':continue
         title=str(video.get('title') or video.get('name') or '')[:100]
@@ -902,7 +978,7 @@ def _parse_cinemeta_episodes(sh, imdb):
           'kind':'episode','source':'stremio','path':f'stremio:{imdb}:{season}:{number}',
           'show':str(sh.get('show') or '')[:100],
           'name':f'{sh.get("show")} · T{season:02d}E{number:02d} · {title or "Episódio"}',
-          'imdbId':imdb,'season':season,'episode':number,'duration':runtime*60,
+          'imdbId':imdb,'season':season,'episode':number,'absoluteEpisode':absolute,'duration':runtime*60,
           'durationVerified':False,'durationSource':'Cinemeta (estimativa)',
           'releaseDate':first,'originalAirdate':released,'releasePrecision':'original-não-BR',
           'years':[],'event':'normal','audience':sh.get('audience','general'),'seasonTags':episode_season_tags(title),
@@ -941,6 +1017,7 @@ def sync_stremio_episodes():
                 episodes=safe_json_get(f'https://api.tvmaze.com/shows/{tvmaze_id}/episodes',timeout=6)
                 if isinstance(episodes,list):
                     result=[]
+                    absolute=0
                     for ep in episodes[:1500]:
                         if not isinstance(ep,dict):continue
                         date=str(ep.get('airdate') or '')
@@ -951,13 +1028,14 @@ def sync_stremio_episodes():
                         except (ValueError,TypeError):continue
                         if season<1 or number<1:continue
                         if not 2<=minutes<=90:minutes=float(sh.get('episodeMinutes') or 11)
+                        absolute+=1
                         first=max(date,str(sh.get('earliestBR') or '2015-01-01'))
                         if first>'2021-12-31':continue
                         title=str(ep.get('name') or '')
                         result.append({'id':f'stremio:{imdb}:{season}:{number}',
                             'kind':'episode','source':'stremio','path':f'stremio:{imdb}:{season}:{number}',
                             'show':show,'name':f'{show} · T{season:02d}E{number:02d} · {title[:120] or "Episódio"}',
-                            'imdbId':imdb,'season':season,'episode':number,'duration':minutes*60,
+                            'imdbId':imdb,'season':season,'episode':number,'absoluteEpisode':absolute,'duration':minutes*60,
                             'durationVerified':False,'durationSource':'TVmaze (estimativa)',
                             'releaseDate':first,'originalAirdate':date,'releasePrecision':'original-não-BR',
                             'years':[],'event':'normal','audience':sh.get('audience','general'),
@@ -1193,9 +1271,18 @@ class LocalServer(ThreadingHTTPServer):
 class Handler(SimpleHTTPRequestHandler):
     def _json_result(self,result,status=200):
         raw=json.dumps(result,ensure_ascii=False).encode('utf-8')
+        # Episode metadata is several megabytes uncompressed. Compress JSON
+        # responses so phones on Wi-Fi/mobile data can receive the index in time.
+        if 'gzip' in self.headers.get('Accept-Encoding','').lower():
+            raw=gzip.compress(raw,mtime=0)
+            content_encoding='gzip'
+        else:
+            content_encoding=None
         self.send_response(status)
         self.send_header('Content-Type','application/json; charset=utf-8')
         self.send_header('Cache-Control','no-store')
+        self.send_header('Vary','Accept-Encoding')
+        if content_encoding:self.send_header('Content-Encoding',content_encoding)
         self.send_header('Content-Length',str(len(raw)))
         self.end_headers();self.wfile.write(raw)
 
@@ -1255,7 +1342,7 @@ class Handler(SimpleHTTPRequestHandler):
         if route=='/api/duration/observe':
             ok=report_observed_duration(args.get('id'),args.get('duration'))
             return self._json_result({'ok':ok},200 if ok else 400)
-        result=resolve_stremio(args.get('imdbId'),args.get('season'),args.get('episode'),args.get('kind','episode'),args.get('excludeProviders',[]),args.get('expectedShow'),args.get('selectedYear'))
+        result=resolve_stremio(args.get('imdbId'),args.get('season'),args.get('episode'),args.get('kind','episode'),args.get('excludeProviders',[]),args.get('expectedShow'),args.get('selectedYear'),absolute_episode=args.get('absoluteEpisode'))
         if args.get('kind','episode')=='episode' and not args.get('excludeProviders'):
             if result.get('ok'):
                 record_episode_availability(args.get('imdbId'),args.get('season'),args.get('episode'),'candidate')
@@ -1308,7 +1395,7 @@ class Handler(SimpleHTTPRequestHandler):
                 state=episode_availability_status(per_episode.get(k)) if k else 'unknown'
                 if state in ('candidate','played'):by_show[title]['comFonteEncontrada']+=1
                 if state=='unavailable':by_show[title]['semFonteRecente']+=1
-            return self._json_result({'version':'1.02.1','configuradas':len(coverage),
+            return self._json_result({'version':'1.04','configuradas':len(coverage),
                'configuradasTotal':len((read_json('stremio_series.json') or {}).get('series',[])),
                'comEpisodios':sum(bool(v) for v in coverage.values()),
                'seriesExibicao':[{'nome':name,'episodios':count,
@@ -1322,7 +1409,7 @@ class Handler(SimpleHTTPRequestHandler):
                'aviso':'Séries sem episódios ficam no banco, mas fora do catálogo de exibição. Metadados indexados não comprovam que o addon entregue o vídeo.'})
         if route == '/api/catalog/series/configuradas':
             coverage=catalog_series_coverage()
-            return self._json_result({'version':'1.02.1','total':len(coverage),
+            return self._json_result({'version':'1.04','total':len(coverage),
                 'series':[{'nome':n,'episodios':v,'status':'catalogada' if v else 'aguardando importação'}
                           for n,v in coverage.items()]})
         if route == '/api/catalog/diagnostico':
@@ -1333,7 +1420,7 @@ class Handler(SimpleHTTPRequestHandler):
                 and ep.get('enabled') is not False]
             verified = (read_json('stremio_series_verificadas.json') or {}).get('shows', {})
             return self._json_result({
-                'version':'1.02-expanded-catalog',
+                'version':'1.04-expanded-catalog',
                 'episodiosArmazenados':total,
                 'episodiosProgramaveis':len(with_date),
                 'seriesCatalogadas':len({ep.get('show') for ep in with_date if ep.get('show')}),
@@ -1363,10 +1450,16 @@ class Handler(SimpleHTTPRequestHandler):
                     continue
                 ep = dict(x)
                 imdb = str(ep.get('imdbId', ''))
-                evidence = bool((verified.get(imdb) or {}).get('available') or confirmed.get(imdb))
+                show_confirmation = confirmed.get(imdb) or {}
+                evidence = bool((verified.get(imdb) or {}).get('available') or show_confirmation)
                 ep['streamVerifiedByShow'] = evidence
                 ep['availabilityPending'] = not evidence
                 enrich_episode_availability(ep,per_episode)
+                # Playback confirmation is persistent show metadata. Preserve the
+                # exact episode as a trusted fallback after the short cache TTL.
+                confirmed_episode = str(show_confirmation.get('episode') or '')
+                if confirmed_episode == f"{ep.get('season')}x{ep.get('episode')}":
+                    ep['streamAvailability'] = 'played'
                 if ep['duration'] < 420:
                     ep['duration'] = 660
                     ep['durationVerified'] = False
@@ -1377,14 +1470,7 @@ class Handler(SimpleHTTPRequestHandler):
                 'fonteEncontrada':sum(ep.get('streamAvailability') in ('candidate','played') for ep in episodes),
                 'note':'Séries sem episódios não entram no catálogo de exibição; episódios com falha recente ficam fora da próxima grade.'})
         if route == '/api/catalog':
-            raw = json.dumps({'media': make_catalog()}, ensure_ascii=False).encode('utf-8')
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json; charset=utf-8')
-            self.send_header('Cache-Control', 'no-store')
-            self.send_header('Content-Length', str(len(raw)))
-            self.end_headers()
-            self.wfile.write(raw)
-            return
+            return self._json_result({'media': make_catalog()})
         if route == '/favicon.ico':
             self.send_response(204)
             self.end_headers()

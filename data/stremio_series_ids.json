@@ -7,6 +7,14 @@
     "tvmazeId": 290,
     "imdbId": "tt1305826"
   },
+  "Jorel's Brother": {
+    "tvmazeId": 40493,
+    "imdbId": "tt6574360"
+  },
+  "Oswaldo": {
+    "tvmazeId": 63115,
+    "imdbId": "tt8188422"
+  },
   "Steven Universe": {
     "tvmazeId": 1615,
     "imdbId": "tt3061046"
@@ -110,5 +118,29 @@
   "Villainous": {
     "tvmazeId": 32303,
     "imdbId": "tt7049818"
+  },
+  "Historietas Assombradas para Crianças Malcriadas": {
+    "tvmazeId": 43206,
+    "imdbId": "tt6512096"
+  },
+  "Courage the Cowardly Dog": {
+    "tvmazeId": 1956,
+    "imdbId": "tt0220880"
+  },
+  "Dexter's Laboratory": {
+    "tvmazeId": 1953,
+    "imdbId": "tt0115157"
+  },
+  "The Grim Adventures of Billy & Mandy": {
+    "tvmazeId": 7345,
+    "imdbId": "tt0292800"
+  },
+  "Camp Lazlo": {
+    "tvmazeId": 10575,
+    "imdbId": "tt0419315"
+  },
+  "Codename: Kids Next Door": {
+    "tvmazeId": 7302,
+    "imdbId": "tt0312109"
   }
 }

@@ -44,6 +44,8 @@
     {
       "show": "Irmão do Jorel",
       "searchName": "Jorel's Brother",
+      "tvmazeId": 40493,
+      "imdbId": "tt6574360",
       "earliestBR": "2015-01-01",
       "episodeMinutes": 11,
       "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."
@@ -195,6 +197,8 @@
     {
       "show": "Oswaldo",
       "searchName": "Oswaldo",
+      "tvmazeId": 63115,
+      "imdbId": "tt8188422",
       "earliestBR": "2017-01-01",
       "episodeMinutes": 11,
       "note": "Busca por título na TVmaze; IMDb ID e compatibilidade devem ser confirmados antes de usar."

@@ -1,103 +1,103 @@
 {
   "films": {
     "tt2235542": {
-      "available": false,
-      "checkedAt": 1791905991.9016242,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711015.4866798,
+      "provider": "FenixFlix"
     },
     "tt2423422": {
-      "available": false,
-      "checkedAt": 1791905994.252761,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711016.9987335,
+      "provider": "FenixFlix"
     },
     "tt3025994": {
-      "available": false,
-      "checkedAt": 1791905995.263319,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711018.1740534,
+      "provider": "FenixFlix"
     },
     "tt3919322": {
-      "available": false,
-      "checkedAt": 1791906006.2576036,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711019.3879864,
+      "provider": "FenixFlix"
     },
     "tt4006794": {
-      "available": false,
-      "checkedAt": 1791906009.5450447,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711020.404316,
+      "provider": "FenixFlix"
     },
     "tt1490017": {
-      "available": false,
-      "checkedAt": 1791906010.5317688,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711021.4821572,
+      "provider": "FenixFlix"
     },
     "tt4189260": {
-      "available": false,
-      "checkedAt": 1791906011.306931,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711022.754508,
+      "provider": "FenixFlix"
     },
     "tt4717798": {
-      "available": false,
-      "checkedAt": 1791906012.3688948,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711032.190797,
+      "provider": "Magnetflix"
     },
     "tt4215766": {
-      "available": false,
-      "checkedAt": 1791906013.5981655,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711032.941718,
+      "provider": "FenixFlix"
     },
     "tt5836262": {
       "available": false,
-      "checkedAt": 1791906014.5367248,
+      "checkedAt": 1792711042.9118059,
       "provider": null
     },
     "tt5251438": {
-      "available": false,
-      "checkedAt": 1791906015.5164573,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711046.3753934,
+      "provider": "Magnetflix"
     },
     "tt5548284": {
-      "available": false,
-      "checkedAt": 1791906016.3925834,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711052.4642336,
+      "provider": "FenixFlix"
     },
     "tt4116284": {
-      "available": false,
-      "checkedAt": 1791906017.4189782,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711054.027383,
+      "provider": "FenixFlix"
     },
     "tt3014284": {
-      "available": false,
-      "checkedAt": 1791906018.437554,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711058.0819604,
+      "provider": "Magnetflix"
     },
     "tt6182908": {
-      "available": false,
-      "checkedAt": 1791906019.730817,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711061.2165112,
+      "provider": "Magnetflix"
     },
     "tt10327712": {
-      "available": false,
-      "checkedAt": 1791906020.7764015,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711064.3899324,
+      "provider": "Magnetflix"
     },
     "tt3513498": {
-      "available": false,
-      "checkedAt": 1791906021.6572533,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711068.2243533,
+      "provider": "Magnetflix"
     },
     "tt12093878": {
-      "available": false,
-      "checkedAt": 1791906022.3782203,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711071.7744164,
+      "provider": "Magnetflix"
     },
     "tt3152592": {
-      "available": false,
-      "checkedAt": 1791906023.2516115,
-      "provider": null
+      "available": true,
+      "checkedAt": 1792711075.5024762,
+      "provider": "Magnetflix"
     },
     "tt2162709": {
       "available": true,
-      "checkedAt": 1791907614.8570797,
+      "checkedAt": 1792711014.1057575,
       "provider": "FenixFlix"
     }
   }

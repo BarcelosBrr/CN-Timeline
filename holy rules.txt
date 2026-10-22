@@ -1,0 +1,80 @@
+um site que 'simula' a sensação típica de ligar a cartoon network entre 2015-2021, exibindo desenhos da época, bumpers (vinhetas), promos, anúncios, etc...
+os desenhos exibidos devem estar incluídos no catálogo da cartoon na época escolhida, e a grade de programação deve sempre ser coerente com seu ano
+os episódios não devem ser exibidos 'fora de época'; exemplo: um episódio lançado em 2018 pode ser exibido neste ano, em 2019, 2020 e 2021, mas nunca antes.
+mantenha sempre a lógica 70/30 de episódios atuais (lançados recentemente — isto é, para a época escolhida) e episódios mais antigos
+lógica: desenho -> vinheta -> anúncio/promo (deve ser exibido os dois) -> vinheta -> promo -> chamada ('vem aí') -> desenho... assim como é em um canal de TV mesmo
+lembre sempre de utilizar quadros da época, como o HAHAHA, Maratona de fim de semana, Heróis, Outra Semana no Cartoon, Clube Boomerang, Girl Power, Toonami, Cartoon Off-Air, Votatoon, Especial de temporada, Madrugada Cartoon, Clássicos CN, Cine Cartoon, Cartoon Z@um, Copa Toon, Toontubers, Brazuca... sempre atribuindo cada um à sua época
+
+sobre a grade: deve ser coerente com uma grade de programas do Cartoon
+- manhã, tarde, noite e madrugada
+- de manhã passa certos desenhos, assim como tarde e noite
+- apenas a tarde/noite terá o cinecartoon
+
+quadros devem ter suas chamadas ('vem ai'), assim como os desenhos
+
+cada quadro deve exibir o desenho/episódio adequado para esse quadro
+- exemplo: o cinecartoon deve apenas exibir filmes
+- exemplo: o toontubers so deve exibir episódios de toontubers
+- exemplo: outra semana no cartoon deve so exibir episódios de outra semana no cartoon
+- exemplo: hahaha so deve exibir desenhos engraçados (nada de animes, desenhos de super-heróis sérios, etc...)
+- exemplo: clássicos CN são so clássicos
+- e assim por diante, se necessário buscar na internet sobre cada quadro
+
+sobre toontubers e outra semana no cartoon, esses provavelmente não estarão no stremio, logo, deve-se buscar no youtube (que tem essas duas series completas); adicionar suporte do youtube para essas duas, apenas; integrar o youtube de maneira otimizada e que seja compatível com player, que não demore para carregar o vídeo...
+
+o site deve ser sempre bem otimizado, não demorando entre desenhos e vídeos locais, com o objetivo de passar aquela sensação de TV mesmo (que nada nunca para)
+
+cada era escolhida no site deve ter a sensação de sua época (2015 - CHECK it! 3.0; 2016 - CHECK it! 4.0; 2017 - Dimensional 1.0; 2018 - Dimensional 2.0; 2019 - Dimensional 3.0 / Mashup; 2020-2021 - Dimensional 4.0 / Zero Gravity), com o site mudando levemente seu design com base em cada época selecionada
+
+a escolha de eras deve ser sempre feita pela 'timeline' abaixo do player; o usuário selecionará um botão de ano, haverá uma transição bonitinha, e mudará o ano selecionado.
+
+sempre que abrir o site, a grade deve estar completa, e o usuário deve pegar a programação atual já rolando (horário atual menos horário de início), como se estivesse ligando a TV durante um episódio — dando aquela sensação de TV mesmo (que nunca para)
+
+em épocas comemorativas, como halloween (outubro), natal (dezembro), ação de graças (novembro), carnaval (fevereiro), férias (julho, agosto), páscoa (abril), férias escolares (janeiro), o site deve ser decorado com base na época, e a grade de programação deve ser adequada para a inclusão de alguns episódios especiais da época. exemplo: em época de halloween, o site deve incluir mais episódios de halloween dos desenhos; e os episódios que forem comemorativos devem ser adicionados a um quadro especial criado apenas durante essa época (Halloween deve ser Contos de Terror do Parque para Apenas um Show e Mês do Terror para outros desenhos; e o resto deve se chamar 'Maratona de...' e o nome da data); na véspera e no dia dessas datas, como 23-24-25 de dezembro, ou 29-30-31 de outubro, a quantidade de episódios comemorativos deve aumentar
+
+o site deve, além de ser principalmente para o PC, suporte para TV e celular
+
+ordem dos addons stremio: FenixFlix -> Magnetflix -> FrostStream
+
+catálogo típico da cartoon em datas específicas (mas lembre sempre de interpolar com o catálogo brasileiro)
+https://cnas.fandom.com/wiki/January_5,_2018
+
+https://cnas.fandom.com/wiki/September_17,_2017
+
+https://cnas.fandom.com/wiki/March_6,_2017
+
+https://cnas.fandom.com/wiki/October_6,_2015
+
+https://cnas.fandom.com/wiki/February_16,_2015
+
+https://cnas.fandom.com/wiki/July_6,_2015
+
+https://cnas.fandom.com/wiki/April_18,_2016
+
+https://cnas.fandom.com/wiki/December_22,_2016
+
+https://cnas.fandom.com/wiki/June_14,_2016
+
+https://cnas.fandom.com/wiki/November_22,_2017
+
+https://cnas.fandom.com/wiki/July_9,_2018
+
+https://cnas.fandom.com/wiki/May_23,_2018
+
+https://cnas.fandom.com/wiki/January_29,_2019
+
+https://cnas.fandom.com/wiki/August_29,_2019
+
+https://cnas.fandom.com/wiki/December_20,_2019
+
+https://cnas.fandom.com/wiki/October_9,_2020
+
+https://cnas.fandom.com/wiki/July_14,_2020 
+
+https://cnas.fandom.com/wiki/September_1,_2020
+
+https://cnas.fandom.com/wiki/November_11,_2021
+
+https://cnas.fandom.com/wiki/April_27,_2021
+
+https://cnas.fandom.com/wiki/August_13,_2021

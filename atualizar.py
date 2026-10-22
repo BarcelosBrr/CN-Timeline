@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cartoon Timeline v1.02.1: automatic one-step safe upgrade (no separate catalog utility)."""
+"""Cartoon Timeline v1.04: automatic one-step safe upgrade."""
 from pathlib import Path
 from datetime import datetime
 import json,shutil,sys,unicodedata,re
@@ -9,8 +9,8 @@ if len(sys.argv)<2:
 target=Path(sys.argv[1]).expanduser().resolve()
 if not (target/'server.py').exists():
  print('ERRO: pasta selecionada nao contem server.py');sys.exit(2)
-if target==source:print('Esta pasta ja e a versao 1.02.1.');sys.exit(0)
-backup=target.parent/(target.name+'_backup_v102_'+datetime.now().strftime('%Y%m%d_%H%M%S'))
+if target==source:print('Esta pasta ja e a versao 1.04.');sys.exit(0)
+backup=target.parent/(target.name+'_backup_v104_'+datetime.now().strftime('%Y%m%d_%H%M%S'))
 def read(path):
  try:return json.loads(path.read_text(encoding='utf-8'))
  except (OSError,ValueError):return {}
@@ -21,11 +21,12 @@ def save(path):
   out=backup/path.relative_to(target);out.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(path,out)
 def write(path,obj):
  path.parent.mkdir(parents=True,exist_ok=True)
- temp=path.with_name(path.name+'.v102.tmp')
- temp.write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n',encoding='utf-8');temp.replace(path)
+ temp=path.with_name(path.name+'.v104.tmp')
+ temp.write_text(json.dumps(obj,ensure_ascii=True,indent=2)+'\n',encoding='utf-8');temp.replace(path)
 # Move code only; leave media, episodes, verified streams, user settings untouched.
 for relative in ('server.py','research.py','public/app.js','public/planner.js','public/index.html',
-                 'public/style.css','public/cn-logo.svg','INICIAR_WINDOWS.bat','README.md','sincronizar_midias.py'):
+                 'public/style.css','public/cn-logo.svg','INICIAR_WINDOWS.bat','ATUALIZAR_WINDOWS.bat',
+                 'atualizar.py','README.md','sincronizar_midias.py'):
  src=source/relative;dest=target/relative
  if src.is_file():save(dest);dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dest)
 # Complete stable IDs from new package; never discard user IDs or unrelated custom shows.
@@ -63,9 +64,9 @@ for sh in template.get('series',[]):
    if sh.get(attr) and not old.get(attr):old[attr]=sh[attr];improved+=1
   if key==norm('Ben 10') and old.get('tvmazeId')==2:old['tvmazeId']=22084;improved+=1
   # Do not override disabled custom entries or user release dates.
-obj={**original,'enabled':True,'version':'1.02.1','series':rows}
+obj={**original,'enabled':True,'version':'1.04','series':rows}
 save(configuration);write(configuration,obj)
-print('Cartoon Timeline v1.02.1 instalado: %d series configuradas, %d novas, %d ajustes de identidade.'%(len(rows),new_count,improved))
+print('Cartoon Timeline v1.04 instalado: %d series configuradas, %d novas, %d ajustes de identidade.'%(len(rows),new_count,improved))
 print('IDs: %d. Episodios, midias locais e caches preservados.'%len(merged))
 print('Backup dos arquivos modificados em:',backup)
 print('Reinicie o servidor: a sincronizacao de desenhos ausentes sera iniciada automaticamente em segundo plano.')

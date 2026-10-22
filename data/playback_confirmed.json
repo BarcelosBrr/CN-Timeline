@@ -1,19 +1,124 @@
 {
   "shows": {
     "tt3061046": {
-      "confirmedAt": "2026-10-13T16:19:01Z",
+      "confirmedAt": "2026-10-21T22:19:25Z",
       "source": "reprodução HTML5 observada",
-      "episode": "3x14"
+      "episode": "5x9"
     },
     "tt2771780": {
-      "confirmedAt": "2026-10-13T16:17:58Z",
+      "confirmedAt": "2026-10-20T20:21:33Z",
       "source": "reprodução HTML5 observada",
-      "episode": "3x18"
+      "episode": "7x12"
     },
     "tt8146760": {
       "confirmedAt": "2026-10-13T16:27:49Z",
       "source": "reprodução HTML5 observada",
       "episode": "1x14"
+    },
+    "tt4644488": {
+      "confirmedAt": "2026-10-14T12:33:48Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "1x4"
+    },
+    "tt0115157": {
+      "confirmedAt": "2026-10-21T09:25:55Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "2x3"
+    },
+    "tt4215734": {
+      "confirmedAt": "2026-10-14T11:16:40Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "1x5"
+    },
+    "tt2293002": {
+      "confirmedAt": "2026-10-20T23:24:04Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "5x6"
+    },
+    "tt3559124": {
+      "confirmedAt": "2026-10-14T11:17:28Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "2x9"
+    },
+    "tt0454349": {
+      "confirmedAt": "2026-10-14T12:32:34Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "1x5"
+    },
+    "tt0312109": {
+      "confirmedAt": "2026-10-21T09:25:48Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "2x10"
+    },
+    "tt3232262": {
+      "confirmedAt": "2026-10-21T15:46:44Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "2x38"
+    },
+    "tt6574360": {
+      "confirmedAt": "2026-10-14T14:40:09Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "1x24"
+    },
+    "tt9628244": {
+      "confirmedAt": "2026-10-14T12:51:01Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "1x46"
+    },
+    "tt4839610": {
+      "confirmedAt": "2026-10-21T14:52:37Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "4x11"
+    },
+    "tt6965802": {
+      "confirmedAt": "2026-10-14T12:50:30Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "1x1"
+    },
+    "tt4718304": {
+      "confirmedAt": "2026-10-21T22:21:00Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "3x20"
+    },
+    "tt6148376": {
+      "confirmedAt": "2026-10-14T13:34:04Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "3x31"
+    },
+    "tt1710308": {
+      "confirmedAt": "2026-10-21T00:10:18Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "7x9"
+    },
+    "tt8188422": {
+      "confirmedAt": "2026-10-20T20:25:31Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "1x4"
+    },
+    "tt7713450": {
+      "confirmedAt": "2026-10-22T23:09:32Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "1x9"
+    },
+    "tt8019790": {
+      "confirmedAt": "2026-10-20T23:31:22Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "1x1"
+    },
+    "tt1305826": {
+      "confirmedAt": "2026-10-21T00:32:32Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "10x7"
+    },
+    "tt0168366": {
+      "confirmedAt": "2026-10-21T15:23:50Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "16x29"
+    },
+    "tt6874502": {
+      "confirmedAt": "2026-10-22T23:16:45Z",
+      "source": "reprodução HTML5 observada",
+      "episode": "1x37"
     }
   }
 }

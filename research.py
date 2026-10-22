@@ -7,7 +7,7 @@ from pathlib import Path
 
 _LOCK=threading.Lock()
 RESULTS={}
-MAX_RESULTS=5
+MAX_RESULTS=15
 TYPES={'vinhetas','promos','chamadas','anuncios','especiais'}
 MAX_FILE=220*1024*1024
 
@@ -30,11 +30,17 @@ def _license_ok(url):
 def search(year,kind,term,api_key=None):
     if int(year) not in range(2015,2022) or kind not in TYPES:raise ValueError('Ano ou categoria inválidos')
     term=str(term or '').strip()[:90]
-    query=('Cartoon Network Brasil '+str(year)+' '+kind+' '+term).strip()
+    category_terms={
+      'vinhetas':['bumper','bumpers','ident','idents','vinheta','vinhetas','cn id'],
+      'promos':['promo','promos','promotional','new episodes','novos episodios'],
+      'chamadas':['promo','promoção','vem ai','coming up','next up','chamada'],
+      'anuncios':['commercial','commercials','advertisement','advertising','anuncio','anuncios'],
+      'especiais':['special','marathon','maratona','halloween','christmas','natal']}
+    query=('Cartoon Network Brasil '+str(year)+' '+kind+' '+term+' '+' '.join(category_terms[kind])).strip()
     # Fonte de descoberta pública sem API key; NUNCA classifica por data de upload.
     archive='https://archive.org/advancedsearch.php?'+urllib.parse.urlencode({
-        'q':'(title:(cartoon) OR description:(cartoon)) AND mediatype:movies',
-        'fl[]':['identifier','title','year','licenseurl','description'], 'rows':100,'page':1,'output':'json'},doseq=True)
+        'q':'(title:(cartoon network) OR description:(cartoon network) OR title:(cnbrarchive) OR description:(cnbrarchive)) AND mediatype:movies',
+        'fl[]':['identifier','title','year','licenseurl','description'], 'rows':500,'page':1,'output':'json'},doseq=True)
     found=[]
     try:
         info=_json(archive)
@@ -45,16 +51,21 @@ def search(year,kind,term,api_key=None):
             haystack=(label+' '+str(doc.get('description',''))).lower()
             terms=[x for x in _slug(term).split('_') if len(x)>2]
             normalized=_slug(haystack)
-            if not ('cartoon_network' in normalized or 'cn_brasil' in normalized or 'cnbrarchive' in normalized):continue
-            if terms and not any(t in _slug(haystack) for t in terms):continue
+            brand_match=any(x in normalized for x in ('cartoon_network','cn_brasil','cnbrarchive','cartoon_brasil'))
+            if not brand_match:continue
+            category_match=any(_slug(t) in normalized for t in category_terms[kind])
+            if not category_match and kind not in ('chamadas','promos'):continue
+            if terms and not any(t in normalized for t in terms):continue
             licenseurl=str(doc.get('licenseurl') or '')
+            archive_year=str(doc.get('year') or '')
+            year_match=str(year) in (archive_year+' '+haystack)
             item={'id':id,'title':label,'url':'https://archive.org/details/'+id,
                   'license':licenseurl,'mayImport':_license_ok(licenseurl),
                   'yearRequested':int(year),'kind':kind,
-                  'historicalStatus':'PENDENTE — data real de veiculação ainda não confirmada',
+                  'historicalStatus':'PENDENTE — '+('referência menciona o ano escolhido, mas veiculação precisa ser confirmada' if year_match else 'ano de veiculação ainda não confirmado'),
                   'source':'Internet Archive'}
             found.append(item)
-            if len(found)>=MAX_RESULTS:break
+            if len(found)>=MAX_RESULTS*3:break
     except Exception as e:
         # A API alternativa (se configurada) ainda pode responder.
         archive_error=f'Internet Archive indisponível: {type(e).__name__}'
@@ -111,6 +122,12 @@ def search(year,kind,term,api_key=None):
         for x in found:RESULTS[x['id']]=(x)
         # Limitar o cache de sessões anteriores
         while len(RESULTS)>100:RESULTS.pop(next(iter(RESULTS)))
+    # Ordena títulos que mencionam o ano e termos da categoria primeiro.
+    def score(item):
+        text=_slug(item['title']+' '+item.get('historicalStatus',''))
+        return (2 if str(year) in text else 0)+sum(1 for t in category_terms[kind] if _slug(t) in text)
+    found.sort(key=score,reverse=True)
+    found=found[:MAX_RESULTS]
     return {'items':found,'limit':MAX_RESULTS,'query':query,'error':archive_error if not found and 'archive_error' in locals() else None,
             'discoveryLinks':['https://archive.org/search?query='+urllib.parse.quote(query),
                               'https://www.youtube.com/results?search_query='+urllib.parse.quote(query),

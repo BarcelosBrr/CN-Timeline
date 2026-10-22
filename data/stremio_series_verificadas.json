@@ -1,148 +1,293 @@
 {
   "shows": {
-    "tt3061046": {
-      "available": false,
-      "checkedEpoch": 1791906010.8565793,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
-    },
-    "tt1710308": {
-      "available": false,
-      "checkedEpoch": 1791906011.0503647,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
-    },
     "tt1942683": {
-      "available": false,
-      "checkedEpoch": 1791906011.461045,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+      "available": true,
+      "checkedEpoch": 1792527446.514342,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt3061046": {
+      "available": true,
+      "checkedEpoch": 1792527445.4761539,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     },
     "tt1305826": {
-      "available": false,
-      "checkedEpoch": 1791906013.0155563,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+      "available": true,
+      "checkedEpoch": 1792527446.8853915,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     },
     "tt4839610": {
-      "available": false,
-      "checkedEpoch": 1791906013.6692567,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+      "available": true,
+      "checkedEpoch": 1792527447.2453659,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     },
     "tt3061050": {
-      "available": false,
-      "checkedEpoch": 1791906014.2574918,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+      "available": true,
+      "checkedEpoch": 1792527447.6850092,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     },
     "tt3042608": {
-      "available": false,
-      "checkedEpoch": 1791906015.3749473,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
-    },
-    "tt4215734": {
-      "available": false,
-      "checkedEpoch": 1791906016.5005057,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
-    },
-    "tt3559124": {
-      "available": false,
-      "checkedEpoch": 1791906017.8499625,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+      "available": true,
+      "checkedEpoch": 1792574194.0004225,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     },
     "tt2771780": {
-      "available": false,
-      "checkedEpoch": 1791906018.0778081,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+      "available": true,
+      "checkedEpoch": 1792527452.3761907,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt1710308": {
+      "available": true,
+      "checkedEpoch": 1792527450.9695487,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x4",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt4215734": {
+      "available": true,
+      "checkedEpoch": 1792530177.383355,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt3559124": {
+      "available": true,
+      "checkedEpoch": 1792530178.3991196,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     },
     "tt0454349": {
-      "available": false,
-      "checkedEpoch": 1791906019.356581,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
-    },
-    "tt3232262": {
-      "available": false,
-      "checkedEpoch": 1791906020.255851,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+      "available": true,
+      "checkedEpoch": 1792536476.0722334,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     },
     "tt2293002": {
-      "available": false,
-      "checkedEpoch": 1791906020.2615042,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+      "available": true,
+      "checkedEpoch": 1792536476.072303,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt3232262": {
+      "available": true,
+      "checkedEpoch": 1792536476.5336175,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     },
     "tt4033696": {
       "available": false,
-      "checkedEpoch": 1791906021.5901961,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
-    },
-    "tt4718304": {
-      "available": false,
-      "checkedEpoch": 1791906022.7537272,
+      "checkedEpoch": 1792710619.9874344,
       "source": "consulta_temporária",
       "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
     },
     "tt4847134": {
       "available": false,
-      "checkedEpoch": 1791906022.9403458,
+      "checkedEpoch": 1792710634.0244634,
       "source": "consulta_temporária",
       "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
     },
-    "tt6148376": {
-      "available": false,
-      "checkedEpoch": 1791906023.502219,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+    "tt4718304": {
+      "available": true,
+      "checkedEpoch": 1792536480.5003126,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     },
     "tt4644488": {
+      "available": true,
+      "checkedEpoch": 1792541064.968336,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt5444412": {
+      "available": true,
+      "checkedEpoch": 1792541064.6072955,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt4123482": {
       "available": false,
-      "checkedEpoch": 1791906024.738205,
+      "checkedEpoch": 1792710641.7452748,
       "source": "consulta_temporária",
       "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
     },
     "tt0168366": {
-      "available": false,
-      "checkedEpoch": 1791906025.0211022,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+      "available": true,
+      "checkedEpoch": 1792541060.231629,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     },
-    "tt5444412": {
-      "available": false,
-      "checkedEpoch": 1791906025.5753398,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
-    },
-    "tt4123482": {
-      "available": false,
-      "checkedEpoch": 1791906026.643312,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
-    },
-    "tt6965802": {
-      "available": false,
-      "checkedEpoch": 1791906027.3389769,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
-    },
-    "tt8146760": {
-      "available": false,
-      "checkedEpoch": 1791906028.832575,
-      "source": "consulta_temporária",
-      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+    "tt6148376": {
+      "available": true,
+      "checkedEpoch": 1792536477.1381767,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     },
     "tt7713450": {
+      "available": true,
+      "checkedEpoch": 1792541073.8800066,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt8019790": {
+      "available": true,
+      "checkedEpoch": 1792574215.1496544,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt8146760": {
+      "available": true,
+      "checkedEpoch": 1792541069.3123796,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt6874502": {
+      "available": true,
+      "checkedEpoch": 1792574216.817182,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt6965802": {
+      "available": true,
+      "checkedEpoch": 1792574213.0821154,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt9628244": {
+      "available": true,
+      "checkedEpoch": 1792574221.8041904,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt8146754": {
+      "available": true,
+      "checkedEpoch": 1792574224.6702864,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt8456094": {
       "available": false,
-      "checkedEpoch": 1791906032.236739,
+      "checkedEpoch": 1792710660.2295787,
       "source": "consulta_temporária",
       "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+    },
+    "tt7049818": {
+      "available": true,
+      "checkedEpoch": 1792710644.0140834,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt8435344": {
+      "available": true,
+      "checkedEpoch": 1792574240.71569,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt2861424": {
+      "available": true,
+      "checkedEpoch": 1792574250.0377028,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt1561755": {
+      "available": true,
+      "checkedEpoch": 1792574253.307456,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt0437745": {
+      "available": true,
+      "checkedEpoch": 1792596180.6661348,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt6512096": {
+      "available": false,
+      "checkedEpoch": 1792710669.5160248,
+      "source": "consulta_temporária",
+      "note": "Nenhum MP4/HLS encontrado entre amostras; não apagar confirmações antigas"
+    },
+    "tt0220880": {
+      "available": true,
+      "checkedEpoch": 1792710654.4445229,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt0115157": {
+      "available": true,
+      "checkedEpoch": 1792710668.5677254,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x4",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt0292800": {
+      "available": true,
+      "checkedEpoch": 1792710674.3483102,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt0419315": {
+      "available": true,
+      "checkedEpoch": 1792710680.8685277,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt0312109": {
+      "available": true,
+      "checkedEpoch": 1792710682.7414627,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt6574360": {
+      "available": true,
+      "checkedEpoch": 1792574291.8531764,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
+    },
+    "tt8188422": {
+      "available": true,
+      "checkedEpoch": 1792710690.5619981,
+      "source": "addon_stream_endpoint",
+      "sampleEpisode": "1x1",
+      "note": "URL candidata; teste HTML5 final ocorre no player"
     }
   }
 }

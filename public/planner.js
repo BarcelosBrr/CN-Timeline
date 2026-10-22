@@ -112,7 +112,8 @@ function season(d){
 function key(d){return `${d.year}-${pad(d.month)}-${pad(d.day)}`}
 function eligible(media,d){
  if(!media || !media.path || media.enabled===false || !(media.duration>0))return false;
- if(media.kind==='episode' && media.streamAvailability==='unavailable')return false;
+ // Falha recente de um addon é evidência temporária de reprodução, não motivo
+ // para apagar um episódio real do catálogo ou deixar a grade sem desenhos.
  if(Array.isArray(media.years)&&media.years.length&&!media.years.includes(d.year))return false;
  const k=key(d);
  if(media.durationVerified===false&&media.durationSource==='unknown')return false;
@@ -128,6 +129,36 @@ function eligible(media,d){
  if(media.kind==='special'&&(!media.event||media.event==='normal'||media.event!==season(d)))return false; // chamada sem época definida
  return true;
 }
+function showEligibility(name,catalog,year,date=new Date()){
+ const d={year:Number(year),month:date.getMonth()+1,day:Math.min(date.getDate(),new Date(Number(year),date.getMonth()+1,0).getDate())};
+ const meta=SHOWS.find(s=>normalize(s.name)===normalize(name));
+ const episodes=(Array.isArray(catalog)?catalog:[]).filter(x=>x.kind==='episode'&&normalize(x.show)===normalize(name)&&eligible(x,d));
+ if(!meta){
+   const airedThisYear=episodes.some(x=>String(x.firstAiredBR||x.originalAirdate||x.releaseDate||'').startsWith(`${year}-`));
+   return airedThisYear?{eligible:true,reason:'',episodes:episodes.length}:{eligible:false,reason:'historico'};
+ }
+ if(key(d)<meta.from)return {eligible:false,reason:'futuro'};
+ return episodes.length?{eligible:true,reason:'',episodes:episodes.length}:{eligible:false,reason:'sem-episodios'};
+}
+function showEligibilityMap(catalog,year,date=new Date()){
+ const d={year:Number(year),month:date.getMonth()+1,day:Math.min(date.getDate(),new Date(Number(year),date.getMonth()+1,0).getDate())};
+ const counts=new Map(),airedThisYear=new Set(),names=new Map();
+ for(const ep of Array.isArray(catalog)?catalog:[]){
+   if(ep?.kind!=='episode'||!ep.show)continue;
+   const id=normalize(ep.show);names.set(id,ep.show);
+   if(!eligible(ep,d))continue;
+   counts.set(id,(counts.get(id)||0)+1);
+   if(String(ep.firstAiredBR||ep.originalAirdate||ep.releaseDate||'').startsWith(`${year}-`))airedThisYear.add(id);
+ }
+ const result=new Map(),k=key(d);
+ for(const [id,name] of names){
+   const meta=SHOWS.find(s=>normalize(s.name)===id),count=counts.get(id)||0;
+   const allowed=meta? k>=meta.from&&count>0 : count>0&&airedThisYear.has(id);
+   result.set(name,allowed?{eligible:true,reason:'',episodes:count}:
+     {eligible:false,reason:meta&&k<meta.from?'futuro':meta?'sem-episodios':'historico',episodes:count});
+ }
+ return result;
+}
 function weighted(pool,r){if(!pool.length)return null;const weights=pool.map(x=>Math.max(.15,Math.min(5,Number(x.popularity)||1)) * (x.kind==='episode'?(x.streamAvailability==='played'?8:x.streamAvailability==='candidate'?5:1):1)),total=weights.reduce((a,b)=>a+b,0);let t=r()*total;for(let i=0;i<pool.length;i++){t-=weights[i];if(t<=0)return pool[i]}return pool.at(-1)}
 function pickEpisode(show,catalog,d,r,seasonName){
  const candidates=catalog.filter(x=>eligible(x,d)&&x.kind==='episode'&&normalize(x.show)===normalize(show)&&(!x.event||x.event==='normal'||x.event===seasonName));
@@ -135,7 +166,7 @@ function pickEpisode(show,catalog,d,r,seasonName){
  const now=Date.UTC(d.year,d.month-1,d.day);
  const recent=candidates.filter(x=>{const rel=x.firstAiredBR||x.releaseDate;const days=Math.floor((now-Date.parse(rel+'T00:00:00Z'))/86400000);return days>=0&&days<=365});
  const old=candidates.filter(x=>!recent.includes(x));
- let pool=(r()<.60?recent:old);if(!pool.length)pool=recent.length?recent:old;
+ let pool=(r()<.70?recent:old);if(!pool.length)pool=recent.length?recent:old;
  const asset=weighted(pool,r);
  return {asset,age:recent.includes(asset)?'novo':'clássico'};
 }
@@ -149,10 +180,19 @@ function pickType(kind,catalog,d,r,seasonName,show,block){
  if(seasonName!=='normal'){const themed=pool.filter(x=>x.event===seasonName);if(themed.length&&r()<.75)pool=themed}
  return weighted(pool,r);
 }
-function selectShow(d,at,block,r,last,marathonShow,allowedShows){
+function selectShow(d,at,block,r,last,marathonShow,allowedShows,eligibleNames,strictFiltered=false){
  if(marathonShow && (!allowedShows || allowedShows.has(normalize(marathonShow))))return marathonShow;
  const k=key(d), hour=Math.floor(at/3600);
  let all=SHOWS.filter(s=>s.from<=k && (!allowedShows || allowedShows.has(normalize(s.name))));
+ // If the local episode index has eligible titles outside the historical seed
+ // list, use those real catalog names instead of claiming the archive is empty.
+ if(!all.length&&block!=='adultswim'&&eligibleNames?.size){
+   all=[...eligibleNames.values()].filter(name=>!allowedShows||allowedShows.has(normalize(name)))
+     .map(name=>({name,from:k,tags:['principal','comedia','aventura'],peakFrom:d.year,peakTo:d.year}));
+ }
+ if(!all.length)return null;
+ // Séries classificadas como exclusivas da manhã nunca migram para a tarde/noite.
+ if(hour>=12)all=all.filter(s=>!s.tags.includes('manha'));
  if(!all.length)return null;
  if(block!=='adultswim')all=all.filter(s=>!s.tags.includes('adult'));
  if(!all.length)return null;
@@ -164,7 +204,7 @@ function selectShow(d,at,block,r,last,marathonShow,allowedShows){
   maratona:['principal','comedia','aventura'],temporada:['comedia','aventura']};
  let pool=(filters[block]?all.filter(s=>s.tags.some(t=>filters[block].includes(t))):all);
  if(!pool.length && block==='adultswim')return null;
- if(!pool.length)pool=all;
+ if(!pool.length){if(strictFiltered)return null;pool=all;}
  const daypart = hour<6?['madrugada','classico']:
    hour<9?['manha','classico','comedia']:
    hour<12?['comedia','manha','brasileiro']:
@@ -175,6 +215,7 @@ function selectShow(d,at,block,r,last,marathonShow,allowedShows){
  if(['regular','classicos','clube','madrugada'].includes(block)){
    const daytime=pool.filter(s=>s.tags.some(t=>daypart.includes(t)));
    if(daytime.length)pool=daytime;
+   else if(strictFiltered)return null;
  }
  // Âncoras históricas brasileiras (horários aproximados da grade, não cópia exata).
  // Em 2017, alguns horários foram documentados em outubro.
@@ -210,7 +251,6 @@ function selectShow(d,at,block,r,last,marathonShow,allowedShows){
 function blockAt(d,sec,weekend,adultMode=false){
  if(adultMode && (sec>=20*3600||sec<6*3600))return 'adultswim';
  const hour=Math.floor(sec/3600),day=new Date(d.year,d.month-1,d.day).getDay();
- if(hour===12&&day===6)return 'cine';
  if(hour>=0&&hour<5){return d.year>=2020&&hour===1?'toonami':d.year>=2018&&hour===3?'offair':'madrugada'}
  if(hour===5)return 'classicos';
  if(hour===6)return 'classicos';
@@ -232,7 +272,7 @@ function blockAt(d,sec,weekend,adultMode=false){
  if(hour===19&&d.year===2017&&d.month===3&&d.day<=3)return 'toontubers';
  if(hour===19&&d.year>=2017&&d.year<=2018&&day===6&&key(d)>='2017-02-27')return 'toontubers';
  if(hour===19&&d.year>=2015&&day===0)return 'cartoonzaum';
- if(hour===20&&(day===0||day===2||day===5))return 'cine';
+ if(hour===20&&(day===0||day===2||day===5||day===6))return 'cine';
  if(hour===21&&day===3)return 'outra';
  if(hour===23&&d.year>=2020)return 'toonami';
  if(season(d)!=='normal'&&hour===18)return 'temporada';
@@ -246,7 +286,7 @@ function generate(date,year,catalog,options={}){
  const dateString=key(d), seasonal=season(d), adultMode=options.adultSwimMode===true, r=rng(hash(`${dateString}|CN-TL-v101|${adultMode}`));
  const weekend=[0,6].includes(new Date(year,d.month-1,d.day).getDay());
  const dayOfWeek=new Date(year,d.month-1,d.day).getDay();
- const cineAnchor=dayOfWeek===6?12*3600:([0,2,5].includes(dayOfWeek)?20*3600:null);
+ const cineAnchor=[0,2,5,6].includes(dayOfWeek)?20*3600:null;
  // Pré-filtragem uma vez por dia: evita varrer milhares de episódios em cada slot.
  // Duracao contaminada por trailers, erro de stream ou cache antigo nunca
  // transforma um desenho regular em um slot de 60 segundos.
@@ -256,17 +296,27 @@ function generate(date,year,catalog,options={}){
  // falhavam temporariamente, e a grade desaparecia por completo.
  // 'programável' NÃO é sinônimo de 'reproduzível': sinalizamos pendência no guia,
  // e a reprodução valida a URL no momento de sintonizar.
- const available=(Array.isArray(catalog)?catalog:[]).filter(x=>eligible(x,d)).map(x=>{
+ let available=(Array.isArray(catalog)?catalog:[]).filter(x=>eligible(x,d)).map(x=>{
    if(x.kind==='episode' && x.source==='stremio' && x.duration<7*60)
      return {...x,duration:11*60,durationVerified:false,durationSource:'previsao saneada'};
    return x;
  });
  const byKind=new Map(), byShow=new Map();
+ const selectedShows=new Set((Array.isArray(options.selectedShows)?options.selectedShows:[]).map(normalize));
+ // Modo filtrado limita o catálogo, mas mantém a mesma elegibilidade histórica
+ // e a distribuição 70/30 (recentes/clássicos) dentro das séries escolhidas.
+ let filteredFallback=false;
+ if(options.catalogMode==='filtered'&&selectedShows.size){
+   const filtered=available.filter(x=>x.kind!=='episode'||selectedShows.has(normalize(x.show)));
+   if(filtered.some(x=>x.kind==='episode'))available=filtered;
+   else filteredFallback=true; // Nenhuma escolha compatível com a data: preserve o sinal normal.
+ }
  const allowedShows=new Set(available.filter(x=>x.kind==='episode' && x.show).map(x=>normalize(x.show)));
+ const eligibleNames=new Map(available.filter(x=>x.kind==='episode'&&x.show).map(x=>[normalize(x.show),x.show]));
  // After a cold start, metadata may be unavailable. Preserve the historical
  // grid (with honest non-playable slates) rather than a blank day.
  const catalogReady=true; // Títulos só entram se houver metadados de episódio válidos e compatíveis com o ano.
- let themedJustPlayed=false, episodesSinceInterval=0;
+ let themedJustPlayed=false;
  for(const asset of available){
    if(!byKind.has(asset.kind))byKind.set(asset.kind,[]);
    byKind.get(asset.kind).push(asset);
@@ -315,11 +365,13 @@ function generate(date,year,catalog,options={}){
  function interval(show,block,budget=100){
    // Não criar vinhetas/comerciais artificiais: somente mídias reais medidas.
    // Uma pausa sem arquivos originava telas pretas de 30 segundos.
-   let room=Math.min(left(),budget,72), count=0;
-   const order=['bumper','promo','ad','promo','bumper'];
+   let room=Math.min(left(),budget,120);
+   // Intervalo de TV: vinheta, anúncio, promo, vinheta e outra promo. Cada peça é uma mídia
+   // real do acervo e só entra se couber inteira.
+   const order=['bumper','ad','promo','bumper','promo'];
    const used=new Set();
    for(const kind of order){
-     if(room<3 || count>=2)break;
+     if(room<3)break;
      let pool=mediaOptions(kind,null,block,room).filter(a=>!used.has(a.id));
      if(kind==='promo'&&show){
        const related=pool.filter(a=>normalize(a.show)===normalize(show));
@@ -333,7 +385,7 @@ function generate(date,year,catalog,options={}){
      const asset=weighted(pool,r);
      if(!asset)continue;
      add(kind,asset.name,asset.duration,asset,{block,show:asset.show||null,isMain:false});
-     used.add(asset.id);room-=asset.duration;count++;
+     used.add(asset.id);room-=asset.duration;
    }
  }
  // Chamadas são SOMENTE introduções antes de uma nova série ou quadro.
@@ -364,13 +416,12 @@ function generate(date,year,catalog,options={}){
        if(r()<eventWeight)candidates=festive;
      }
    }
-   // Usa exatamente a mesma regra de 60% / 40% com duas categorias disponíveis.
+   // Mantém a regra 70% / 30% entre episódios recentes e mais antigos.
    return pickEpisode(show,candidates,d,r,seasonal);
  }
  function film(){
    const block='cine', room=Math.max(0,left()-155);
-   const candidates=(byKind.get('movie')||[]).filter(x=>x.duration>=1200 && x.duration<=Math.min(room,3*3600) && eligible(x,d) &&
-       (x.source!=='stremio'||x.streamCatalogChecked===true));
+    const candidates=(byKind.get('movie')||[]).filter(x=>x.duration>=1200 && x.duration<=Math.min(room,3*3600) && eligible(x,d));
    const themed=seasonal!=='normal'?candidates.filter(x=>(x.seasonTags||[]).includes(seasonal)):[];
    const asset=weighted(themed.length&&r()<.32?themed:candidates,r);
    const title='Cine Cartoon';
@@ -394,9 +445,13 @@ function generate(date,year,catalog,options={}){
    if(block==='cine' && moviePlayed)block='regular';
    if(!moviePlayed && cineAnchor!==null && at>=cineAnchor && at<cineAnchor+3*3600){
      if(film())continue;
+     block='regular';
    }
-   if(block==='maratona'&&!marathonShow)marathonShow=selectShow(d,at,'maratona',r,recent,catalogReady?allowedShows:null);
+   if(block==='maratona'&&!marathonShow)marathonShow=selectShow(d,at,'maratona',r,recent,catalogReady?allowedShows:null,eligibleNames,options.catalogMode==='filtered');
    if(block!=='maratona')marathonShow='';
+   // Adult Swim is optional; if the chosen filter has no eligible adult shows,
+   // keep the regular Cartoon Network schedule instead of filling the night with slates.
+   if(block==='adultswim'&&!SHOWS.some(s=>s.tags.includes('adult')&&allowedShows.has(normalize(s.name))))block='madrugada';
    if(left()<65){slate(left(),block,'Cartoon Network · próxima programação');break}
    if(['outra','toontubers','cartoonzaum'].includes(block)){
      let pool=mediaOptions('short',null,block,left()-36).filter(x=>normalize(x.block)===normalize(block));
@@ -406,11 +461,12 @@ function generate(date,year,catalog,options={}){
      const hasCall=(byKind.get('call')||[]).some(a=>normalize(a.block)===normalize(block));
      if(hasCall){announcedEmptyShorts.add(block+':'+hour);block='regular';}
    }
-   let show=selectShow(d,at,block,r,recent,marathonShow,catalogReady?allowedShows:null);
+   let show=selectShow(d,at,block,r,recent,marathonShow,catalogReady?allowedShows:null,eligibleNames,options.catalogMode==='filtered');
    // A seleção utiliza todas as séries com episódios válidos para a data,
    // mesmo que o verificador de streams ainda esteja trabalhando.
    if(!show){const untilCine=(cineAnchor!==null&&!moviePlayed&&at<cineAnchor)?cineAnchor-at:left();
-      slate(Math.min(1320,left(),untilCine),block,'Cartoon Network · acervo em verificação');continue}
+      const title=options.catalogMode==='filtered'?'Cartoon Network · faixa sem desenhos selecionados':'Cartoon Network · acervo em verificação';
+      slate(Math.min(1320,left(),untilCine),block,title);continue}
    let ep=chooseEpisode(show,block,Math.max(0,left()-50));
    let asset=ep.asset;
    if(seasonal!=='normal'&&block==='temporada'&&!themedJustPlayed&&r()<.36){
@@ -421,7 +477,11 @@ function generate(date,year,catalog,options={}){
    // mesmo horario. Nunca ocupar 11-22 minutos com trailers/comerciais como
    // consequencia de um catalogo que ainda nao foi sincronizado.
    if(!asset){
-     const otherShows=[...byShow.keys()].filter(k=>k!==normalize(show));
+     const otherShows=[...byShow.keys()].filter(k=>{
+       if(k===normalize(show))return false;
+       const title=SHOWS.find(s=>normalize(s.name)===k);
+       return !(Math.floor(at/3600)>=12&&title?.tags.includes('manha'));
+     });
      const alternateShows=otherShows.map(k=>byShow.get(k)).filter(Boolean)
        .map(assets=>assets.filter(a=>a.duration<=left()-100));
      const candidates=alternateShows.flat();
@@ -431,11 +491,6 @@ function generate(date,year,catalog,options={}){
    }
    const duration=asset?.duration||Math.min(left()-30,660);
    if(duration<=0){slate(left(),block);break}
-   if(cineAnchor!==null&&!moviePlayed&&at<cineAnchor && duration+45>cineAnchor-at){
-     // Nunca encurtar desenho na tentativa de atingir a ancora exata do filme.
-     const gap=cineAnchor-at;
-     if(gap>=15 && gap<=120){interval(null,block,gap);}
-   }
    if(!asset){
      // Não criar atração sem vídeo. Preencher somente com clipes locais reais.
      slate(Math.min(left(),Math.max(120,duration)),block,'CN · acervo temporariamente indisponível');
@@ -445,20 +500,18 @@ function generate(date,year,catalog,options={}){
      intro(asset.show||show,block,Math.max(0,left()-duration-35));
      add(asset.kind==='special'?'special':'episode',asset.name,duration,asset,
        {isMain:true,show:asset.show||show,block,episodeAge:ep.age});
-     episodesSinceInterval++;
      themedJustPlayed=!!asset && (asset.event===seasonal || (asset.seasonTags||[]).includes(seasonal));
      markMain(asset.show||show,block);
-     // Intervalos reais, curtos e nao obrigatorios entre TODO episodio.
-     if(episodesSinceInterval>=2 || r()<.33){
-       interval(show,block,Math.min(62,cineAnchor!==null&&!moviePlayed&&at<cineAnchor?cineAnchor-at:62));
-       episodesSinceInterval=0;
-     }
+     // Anúncio e promo acompanham os bumpers entre episódios, como no fluxo
+     // de programação definido para o canal.
+     interval(show,block,120);
    }
    recent.push(show);if(recent.length>5)recent.shift();
  }
  if(left()>0.0001)slate(left(),'regular','Cartoon Network · encerramento do dia');
  // O cálculo mantém ponto flutuante porque MP4 usa durações fracionárias.
- return {date:dateString,year,season:seasonal,entries,blocks:BLOCKS};
+ return {date:dateString,year,season:seasonal,entries,blocks:BLOCKS,filteredFallback,
+   eligibleEpisodes:available.filter(x=>x.kind==='episode').length,eligibleShows:eligibleNames.size};
 }
-root.CnPlanner={generate,SHOWS,BLOCKS,YEARS,season,easterMonth,eligible,pickEpisode,key};
+root.CnPlanner={generate,SHOWS,BLOCKS,YEARS,season,easterMonth,eligible,showEligibility,showEligibilityMap,pickEpisode,key};
 })(typeof module==='object'&&module.exports?module.exports:window);

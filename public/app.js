@@ -12,6 +12,9 @@ const ERA = {
 };
 let year = Number(localStorage.getItem('cnTimelineYear') || 2017);
 let adultMode=localStorage.getItem('cnAdultSwimUS')==='true';
+let catalogMode=localStorage.getItem('cnCatalogMode')||'normal';
+let selectedShows=new Set();
+try{selectedShows=new Set(JSON.parse(localStorage.getItem('cnFavoriteShows')||'[]'))}catch{}
 const confirmedPlayback=new Set();
 if(year < MIN_YEAR || year > MAX_YEAR) year = 2017;
 let catalog = [], schedule = [], lastDateKey = '', started = false, muted = false;
@@ -23,31 +26,82 @@ let soundContext=null, mediaNode=null, compressor=null, masterGain=null, analyse
 let iframeLoadedAt=0;
 let stremioVersion=0, stremioResolving='', currentProvider='', hlsPlayer=null, stremioExcluded=[], stremioAssetKey='';
 let stremioCandidates=[], stremioCandidateIndex=-1, stremioLoadTimer=null;
+let stremioRetryTimer=null;
+let stremioPlaybackStarted=false;
+let stremioAutoplayBlocked=false;
 let streamRequest=null, nextWarmKey='', nextWarmAt=0;
 let observedRequests=new Set(),lastSyncSnapshot='',syncPollingInFlight=false,stallTimer=null;
 let previousVerifiedShows=0,availabilityRefreshRequested=false;
-let lastRemoteProgressAt=0,catalogRefreshPending=false;
+let lastRemoteProgressAt=0,catalogRefreshPending=false,unsupportedCandidateCount=0;
 let pendingCatalog=null,stremioRequestedOffset=0,stremioRequestedAt=0,activeStallStart=0;
 let guideBrowsingUntil=0, guideFollowId="", lastWatchdog=0;
-const failedEpisodeByYear=new Set();
 const warmedStreams=new Map();
+const stremioRetryCounts=new Map();
+let localWarmElement=null,localWarmKey='',remoteWarmElement=null,remoteWarmHls=null,remoteWarmKey='',remoteWarmUrl='';
 function episodeKey(a){return a?.source==='stremio'?`${a.kind}:${a.imdbId}:${a.season||0}:${a.episode||0}`:''}
 function clearPendingRequest(){if(streamRequest){streamRequest.abort();streamRequest=null}}
+function clearRemoteWarm(){
+ if(remoteWarmHls){try{remoteWarmHls.destroy()}catch{}remoteWarmHls=null;}
+ if(!remoteWarmElement){remoteWarmKey='';remoteWarmUrl='';return;}
+ try{remoteWarmElement.pause();remoteWarmElement.removeAttribute('src');remoteWarmElement.load();remoteWarmElement.remove()}catch{}
+ remoteWarmElement=null;remoteWarmKey='';remoteWarmUrl='';
+}
+function preloadRemoteCandidate(key,candidate){
+ if(!candidate?.url)return;
+ if(remoteWarmKey===key&&remoteWarmUrl===candidate.url)return;
+ clearRemoteWarm();
+ const video=document.createElement('video');
+ video.preload='auto';video.muted=true;video.playsInline=true;video.tabIndex=-1;
+ video.setAttribute('aria-hidden','true');
+ Object.assign(video.style,{position:'fixed',left:'-2px',top:'0',width:'1px',height:'1px',opacity:'0',pointerEvents:'none'});
+ document.body.append(video);remoteWarmElement=video;remoteWarmKey=key;remoteWarmUrl=candidate.url;
+ if(candidate.format==='hls'&&!video.canPlayType('application/vnd.apple.mpegurl')){
+   if(!window.Hls||!window.Hls.isSupported()){clearRemoteWarm();return;}
+   remoteWarmHls=new window.Hls({enableWorker:true,maxBufferLength:20,maxMaxBufferLength:30,backBufferLength:0});
+   remoteWarmHls.attachMedia(video);remoteWarmHls.loadSource(candidate.url);
+ }else{video.src=candidate.url;video.load();}
+}
 async function warmNextEpisode(now){
   if(!started || !schedule.length)return;
   const pos=secs(now), next=schedule.find(x=>x.isMain && x.start>pos && x.asset?.source==='stremio');
   if(!next || next.start-pos>900)return;
   const a=next.asset,key=episodeKey(a),cached=warmedStreams.get(key);
-  if(!key || (cached&&Date.now()-cached.time<240000) || (nextWarmKey===key && Date.now()-nextWarmAt<120000))return;
+  const untilStart=next.start-pos;
+  if(cached&&Date.now()-cached.time<240000){
+    if(untilStart<=300){
+      const candidate=(cached.result.candidates||[]).find(c=>location.protocol!=='https:'||!c.url.startsWith('http://'));
+    if(a.kind==='episode'&&candidate)preloadRemoteCandidate(key,candidate);
+    }
+    return;
+  }
+  if(!key || (nextWarmKey===key && Date.now()-nextWarmAt<120000))return;
   nextWarmKey=key;nextWarmAt=Date.now();
   try{
     const response=await fetch('/api/stremio/resolve',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({imdbId:a.imdbId,season:a.season,episode:a.episode,kind:a.kind,expectedShow:a.show,selectedYear:year})});
+      body:JSON.stringify({imdbId:a.imdbId,season:a.season,episode:a.episode,absoluteEpisode:a.absoluteEpisode,kind:a.kind,expectedShow:a.show,selectedYear:year})});
     if(!response.ok)return;
     const result=await response.json();
-    if(result.ok)warmedStreams.set(key,{time:Date.now(),result});
+    if(result.ok){
+      warmedStreams.set(key,{time:Date.now(),result,confirmed:false});
+      const secondsUntilNow=next.start-secs(new Date());
+      if(a.kind==='episode'&&schedule.some(x=>x.id===next.id)&&secondsUntilNow>=0&&secondsUntilNow<=300){
+        const candidate=(result.candidates||[{url:result.url,format:result.format}])
+          .find(c=>c?.url&&(location.protocol!=='https:'||!c.url.startsWith('http://')));
+        if(candidate)preloadRemoteCandidate(key,candidate);
+      }
+    }
     if(warmedStreams.size>24)warmedStreams.delete(warmedStreams.keys().next().value);
   }catch{} // Prefetch não pode interromper o programa atual.
+}
+function warmNextLocal(now){
+  if(!started||!schedule.length)return;
+  const pos=secs(now),next=schedule.find(x=>x.start>pos&&x.asset?.source==='local'&&x.asset?.path?.startsWith('/media/'));
+  if(!next||next.start-pos>240)return;
+  const key=next.asset.path;if(localWarmKey===key)return;
+  if(localWarmElement){try{localWarmElement.pause();localWarmElement.removeAttribute('src');localWarmElement.load()}catch{}}
+  localWarmKey=key;localWarmElement=document.createElement('video');
+  localWarmElement.preload='auto';localWarmElement.muted=true;localWarmElement.playsInline=true;
+  localWarmElement.src=key;localWarmElement.load();
 }
 
 function destroyHls(){if(hlsPlayer){try{hlsPlayer.destroy()}catch{}hlsPlayer=null}}
@@ -147,9 +201,14 @@ function secs(now){return now.getHours()*3600+now.getMinutes()*60+now.getSeconds
 function timeStr(s){return `${pad(Math.floor(s/3600)%24)}:${pad(Math.floor(s/60)%60)}`}
 function seasonFor(d){return CnPlanner.season(d)}
 function buildSchedule(now){
-  const generated=CnPlanner.generate(now,year,catalog,{adultSwimMode:adultMode});
+  const generated=CnPlanner.generate(now,year,catalog,{adultSwimMode:adultMode,catalogMode,selectedShows:[...selectedShows]});
   schedule=generated.entries;lastDateKey=generated.date;
-  renderPage(now);activeId='';if(started)syncPlayback(now,true);
+  renderPage(now);activeId='';
+  if(generated.filteredFallback){$('catalogFilterStatus').textContent=`Seus desenhos favoritos não têm episódios elegíveis em ${year}; mantendo a programação normal para a TV não parar.`;}
+  if(schedule.some(x=>x.kind==='slate'&&x.title==='Cartoon Network · acervo em verificação')){
+    $('notice').textContent=`Diagnóstico da grade ${year}: ${catalog.filter(x=>x.kind==='episode').length} episódios indexados · ${generated.eligibleEpisodes} elegíveis para esta data · ${generated.eligibleShows} séries elegíveis · modo ${catalogMode}${adultMode?' · Adult Swim ativo':''}.`;
+  }
+  if(started)syncPlayback(now,true);
 }
 function playingAt(now){if(!schedule.length)return null;const pos=secs(now);let lo=0,hi=schedule.length-1;
   while(lo<=hi){let mid=(lo+hi)>>1,entry=schedule[mid];if(pos<entry.start)hi=mid-1;else if(pos>=entry.end)lo=mid+1;else return {item:entry,index:mid,offset:pos-entry.start}}
@@ -159,6 +218,44 @@ function renderBlocks(){
   const available=Object.entries(CnPlanner.BLOCKS).filter(([id,b])=>(id!=='adultswim'||adultMode) && id!=='regular' && year>=b.from && year<=b.to && !(id==='brazuca'&&year>=2017));
   if(year===2020)available.push(['votatoon',CnPlanner.BLOCKS.votatoon]);
   $('blockList').innerHTML=available.map(([id,b])=>`<span class="block-chip" title="${escapeHTML(b.desc)}"><span>${b.icon}</span>${escapeHTML(b.name)}</span>`).join('');
+}
+function renderCatalogFilter(){
+  const list=$('scheduleAvailableList'),selectedList=$('catalogShowList');if(!list||!selectedList)return;
+  const search=($('catalogFilterSearch')?.value||'').trim().toLocaleLowerCase('pt-BR');
+  const names=[...new Set(catalog.filter(x=>x.kind==='episode'&&x.show&&x.enabled!==false).map(x=>x.show))]
+    .sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  const filtered=names.filter(name=>!search||name.toLocaleLowerCase('pt-BR').includes(search));
+  const aliases={'Apenas um Show':'apenas_um_show','O Incrível Mundo de Gumball':'o_incrivel_mundo_de_gumball','Clarêncio, o Otimista':'clarencio_o_otimista','Hora de Aventura':'hora_de_aventura','Jovens Titãs em Ação':'jovens_titas_em_acao','Irmão do Jorel':'irmao_do_jorel','Poderosas Magiespadas':'poderosas_magiespadas','Ben 10: Omniverse':'ben_10_omniverse'};
+  const slug=name=>aliases[name]||name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+  const eligibility=CnPlanner.showEligibilityMap(catalog,year,new Date());
+  const makeTile=(name,selected=false)=>{
+    const state=eligibility.get(name)||{eligible:false,reason:'historico'};
+    const tile=document.createElement('button');tile.type='button';tile.className='schedule-show-tile'+(selected?' selected':'')+(!state.eligible?' unavailable':'');tile.draggable=!selected&&state.eligible;tile.disabled=!selected&&!state.eligible;tile.dataset.show=name;
+    const img=document.createElement('img');img.src=`/media/images/thumb_${slug(name)}.png`;img.alt='';img.loading='lazy';img.onerror=()=>{img.onerror=null;img.src='/media/images/logo_cn.png';img.classList.add('show-thumb-fallback')};
+    const title=document.createElement('span');title.textContent=name;tile.append(img,title);
+    if(!state.eligible&&!selected){const badge=document.createElement('small');badge.className='show-year-badge';badge.textContent=state.reason==='futuro'?'ESTREIA FUTURA':'SEM EPISÓDIOS NESTE ANO';tile.append(badge);tile.title=`Não há episódios elegíveis de ${name} para ${year}.`;}
+    if(selected){const remove=document.createElement('i');remove.className='tile-remove';remove.textContent='×';remove.setAttribute('aria-hidden','true');tile.append(remove);tile.title='Remover da programação';tile.addEventListener('click',()=>toggleFavorite(name,false));}
+    else {tile.title=selectedShows.has(name)?'Já está na programação':'Arraste ou toque para adicionar';tile.addEventListener('click',()=>toggleFavorite(name,!selectedShows.has(name)));tile.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',name);e.dataTransfer.effectAllowed='copy'});}
+    return tile;
+  };
+  list.replaceChildren(...filtered.slice(0,500).map(name=>makeTile(name,false)));
+  const chosen=[...selectedShows].filter(name=>names.some(n=>n.toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR'))&&eligibility.get(name)?.eligible);
+  selectedList.replaceChildren(...chosen.map(name=>makeTile(name,true)));
+  $('scheduleShowCount').textContent=eligibility.size?`${[...eligibility.values()].filter(x=>x.eligible).length}/${names.length}`:String(names.length);
+  $('scheduleDropHint').hidden=chosen.length>0;
+  updateCatalogFilterStatus(names.length,[...eligibility.values()].filter(x=>x.eligible).length);
+}
+function toggleFavorite(name,add){
+  if(add)selectedShows.add(name);else selectedShows.delete(name);
+  localStorage.setItem('cnFavoriteShows',JSON.stringify([...selectedShows]));
+  renderCatalogFilter();if(started&&catalogMode==='filtered')buildSchedule(new Date());
+}
+function updateCatalogFilterStatus(total,eligibleCount){
+  const status=$('catalogFilterStatus');if(!status)return;
+  const count=selectedShows.size;
+  status.textContent=catalogMode==='filtered'
+    ?(count?`${count} escolhido(s) · ${eligibleCount??total??0} compatível(is) com ${year}`:'Escolha ao menos um desenho; sem seleção, vale o modo normal.')
+    :`${eligibleCount??total??catalog.filter(x=>x.kind==='episode'&&x.show&&x.enabled!==false).length} desenhos disponíveis em ${year}. Os demais estão fora da época ou sem episódios datados para a seleção atual.`;
 }
 function renderGuide(now){
  const cur=playingAt(now);if(!cur)return;
@@ -174,23 +271,26 @@ function renderGuide(now){
      ['20:00','Horário nobre'],['22:00','Programação noturna']];
    guideFollowId='';
    const indexed=catalog.filter(x=>x.kind==='episode').length;
-   const eligibleCount=catalog.filter(x=>x.kind==='episode' && x.enabled!==false &&
-     x.duration>0 && (x.releaseDate||x.firstAiredBR) &&
-     (!x.releaseDate||x.releaseDate<=dateKey(now)) &&
-     (!x.firstAiredBR||x.firstAiredBR<=dateKey(now))).length;
-   const message=indexed?`${indexed} episódios cadastrados; ${eligibleCount} elegíveis até ${dateKey(now)}. `+
-     (eligibleCount?'Atualize a página se o guia não aparecer.':'Verifique as datas dos episódios e o ano selecionado.'):
+   let eligibleCount=0;const eligibleNames=new Set();
+   for(const x of catalog){
+     if(x.kind==='episode'&&x.enabled!==false&&x.duration>0&&(x.releaseDate||x.firstAiredBR)&&
+       (!x.releaseDate||x.releaseDate<=dateKey(now))&&(!x.originalAirdate||x.originalAirdate<=dateKey(now))&&
+       (!x.firstAiredBR||x.firstAiredBR<=dateKey(now))){eligibleCount++;if(x.show)eligibleNames.add(x.show);}
+   }
+   const message=indexed?`${indexed} episódios cadastrados; ${eligibleCount} episódios e ${eligibleNames.size} séries elegíveis para ${dateKey(now)}. Modo: ${catalogMode}${adultMode?' · Adult Swim ativo':''}.`+
+     (eligibleCount?' A grade deveria conter episódios; confira esses números em Diagnóstico da biblioteca se a tela persistir.':'Verifique as datas dos episódios e o ano selecionado.'):
      'O índice de episódios está sendo carregado do disco local.';
    $('guide').innerHTML='<div class="guide-pending" role="status"><strong>Preparando a programação de '+year+'…</strong><p>'+message+'</p></div>'+
       phases.map(([hour,title])=>'<div class="guide-row guide-preview"><span class="time">'+hour+'</span><div><div class="name">'+title+'</div><div class="detail">Aguardando metadados elegíveis · '+year+'</div></div></div>').join('');
    return;
  }
  const position=secs(now);
- const current=main.find(x=>x.start<=position&&x.end>position)
+  const activeFromPlayer=activeId?main.find(x=>x.id===activeId):null;
+  const current=activeFromPlayer || main.find(x=>x.start<=position&&x.end>position)
    || [...main].reverse().find(x=>x.start<=position) || main[0];
  activeGuideId=current?.id||'';
  const guide=$('guide');const previousScroll=guide.scrollTop;
- guide.innerHTML=main.map(x=>`<div class="guide-row ${x.id===activeGuideId?'is-active':x.start>position&&x.start<position+3600?'is-upcoming':''}" data-id="${escapeHTML(x.id)}"><span class="time">${timeStr(x.start)}</span><div><div class="name">${escapeHTML(x.title)}</div><div class="detail">${escapeHTML(CnPlanner.BLOCKS[x.block]?.name||x.block||'Programação CN')} · ${Math.max(1,Math.round(x.duration/60))} min${x.asset?.durationVerified===false?' (previsto)':''}${x.episodeAge==='novo'?' · ✨ NOVO':''}${x.availability==='fonte indisponível'?' · Fonte indisponível':x.asset?.source==='stremio'&&x.asset?.streamVerifiedByShow!==true?' · Fonte a verificar ao sintonizar':''}</div>${x.id===activeGuideId?'<span class="live-small">● NO AR / INTERVALO</span>':''}</div></div>`).join('');
+  guide.innerHTML=main.map(x=>`<div class="guide-row ${x.id===activeGuideId?'is-active':x.start>position&&x.start<position+3600?'is-upcoming':''}" data-id="${escapeHTML(x.id)}"><span class="time">${timeStr(x.start)}</span><div><div class="name">${escapeHTML(x.title)}</div><div class="detail">${escapeHTML(CnPlanner.BLOCKS[x.block]?.name||x.block||'Programação CN')} · ${Math.max(1,Math.round(x.duration/60))} min${x.asset?.durationVerified===false?' (previsto)':''}${x.episodeAge==='novo'?' · ✨ NOVO':''}${x.episodeAge==='alternativa'?' · alternativa sintonizada':''}${x.availability==='fonte indisponível'?' · Fonte indisponível':x.asset?.source==='stremio'&&x.asset?.streamVerifiedByShow!==true?' · Fonte a verificar ao sintonizar':''}</div>${x.id===activeGuideId?'<span class="live-small">● NO AR / INTERVALO</span>':''}</div></div>`).join('');
  guide.scrollTop=previousScroll;
  const active=guide.querySelector('.is-active');
  if(active && guideFollowId!==active.dataset.id && Date.now()>guideBrowsingUntil){
@@ -202,7 +302,7 @@ function decorate(d){const season=seasonFor(d);document.body.dataset.season=seas
   const messages={normal:['✦','Programação regular','A seleção diária acompanha a identidade de cada ano.'],halloween:['🎃','Outubro do Terror','Abóboras, esqueletos, sustos e especiais durante outubro.'],christmas:['🎄','Natal Cartoon','Luzes piscantes, presentes, árvores e programação natalina durante dezembro.'],easter:['🐣','Especial de Páscoa','Ovos, coelhos e episódios temáticos durante abril.'],vacation:['☀️','Férias Cartoon!','Julho com maratonas, Jovens Titãs e desenhos para as férias.'],thanksgiving:['🍁','Ação de Graças','Chamadas e especiais de fim de novembro, conforme disponibilidade no acervo.']};
   const [icon,title,description]=messages[season];$('seasonIcon').textContent=icon;$('seasonTitle').textContent=title;
   $('seasonDescription').textContent=description;$('seasonYear').textContent=year;
-  $('eventOverlay').textContent=season==='normal'?'':season==='halloween'?'🎃 OUTUBRO DO TERROR':season==='christmas'?'🎄 NATAL CARTOON':season==='vacation'?'☀️ FÉRIAS CARTOON':season==='thanksgiving'?'🍁 AÇÃO DE GRAÇAS':season==='newyear'?'🎆 ANO NOVO':season==='summer'?'🏖️ FÉRIAS DE VERÃO':'🐣 PÁSCOA CARTOON';
+  $('eventOverlay').textContent='';
 }
 function renderPage(now){const d=dateFor(now);decorate(d);$('selectedYear').textContent=year;$('onAirYear').textContent=year;$('videoYear').textContent=year;
 $('eraLabel').textContent=ERA[year][0];$('eraCaption').textContent=ERA[year][1];$('timelineEra').textContent=ERA[year][0];$('virtualDate').textContent=`${pad(d.day)}/${pad(d.month)}/${d.year}`;
@@ -381,47 +481,50 @@ async function pollAutoSync(){
   }catch{}finally{syncPollingInFlight=false}
 }
 
-function tryAlternativeEpisode(item){
-  if(!item?.asset || item.asset.source!=='stremio'||item.asset.kind!=='episode')return false;
-  if(!item.altTried)item.altTried=new Set([item.asset.id]);
-  if(item.altTried.size>=4)return false;
-  const now=new Date(),d=dateFor(now), virtual=`${d.year}-${pad(d.month)}-${pad(d.day)}`;
-  const pool=catalog.filter(a=>a.source==='stremio' && a.kind==='episode' && a.enabled!==false &&
-    a.show===item.asset.show && a.streamAvailability!=='unavailable' && a.releaseDate && a.releaseDate<=virtual &&
-    (!a.originalAirdate||a.originalAirdate<=virtual) && !item.altTried.has(a.id) &&
-    !failedEpisodeByYear.has(`${year}:${a.id}`) && a.duration>0);
-  if(!pool.length)return false;
-  pool.sort((a,b)=>{const rank=x=>x.streamAvailability==='played'?0:x.streamAvailability==='candidate'?1:2;return rank(a)-rank(b)||Math.abs(a.duration-item.duration)-Math.abs(b.duration-item.duration)});
-  const candidate=pool[0], old=item.asset;
-  item.altTried.add(candidate.id);failedEpisodeByYear.add(`${year}:${old.id}`);
-  stremioVersion++;stremioResolving='';stremioCandidates=[];stremioCandidateIndex=-1;
-  stremioAssetKey='';stremioExcluded=[];clearPendingRequest();standby();activeId='';failedAssetId='';
-  item.asset=candidate;item.title=candidate.name;item.episodeAge='alternativa';
-  // Original slot duration is only a prediction. Adjust it when a new video's
-  // metadata loads; this preserves the guide without cutting the movie/episode.
-  reconcileDuration(item,Number(candidate.duration));
-  candidate.durationVerified=false; // duração de catálogo não é duração efetivamente medida
-  $('syncLabel').textContent='Fonte indisponível · tentando outro episódio compatível';
-  renderGuide(now);syncPlayback(now,true);
-  return true;
-}
-function reportPlaybackFailure(a){
+function reportPlaybackFailure(a,reason='all_candidates_failed'){
  if(a?.source!=='stremio'||a.kind!=='episode')return;
+ if(reason==='unsupported_codec')return;
  fetch('/api/stremio/report-failed',{method:'POST',headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({kind:'episode',reason:'all_candidates_failed',imdbId:a.imdbId,
+   body:JSON.stringify({kind:'episode',reason,imdbId:a.imdbId,
       season:a.season,episode:a.episode})}).catch(()=>{});
 }
 function retireUnplayable(item,reason,confirmed=false){
  if(!item || item.id!==activeId)return;
+ clearTimeout(stremioRetryTimer);stremioRetryTimer=null;
  // Erro antigo: reduzia um episódio de 11–22 min a ~1 min e movia
  // TODOS os próximos programas. Não alterar a grade por erro de rede.
  item.availability='fonte indisponível';
- failedEpisodeByYear.add(`${year}:${item.asset?.id}`);
  $('syncLabel').textContent=reason;
+ $('standbyTitle').textContent=item.title;
+ $('standbyDesc').textContent=reason;
  // Mantém a duração agendada e mostra uma mensagem; a próxima tentativa
  // é gerenciada separadamente, sem repetir a chamada do desenho errado.
  setTuning(false);
  renderGuide(new Date());
+}
+function deferStremioRetry(item,reason){
+ if(!item || item.id!==activeId)return;
+ const key=episodeKey(item.asset),tries=(stremioRetryCounts.get(key)||0)+1;
+ stremioRetryCounts.set(key,tries);
+ // O cache negativo do servidor dura seis segundos; o primeiro retry precisa
+ // ultrapassá-lo para disparar uma consulta nova em vez de repetir a mesma falha.
+ const delay=Math.min(60000,7000*2**Math.min(tries-1,4));
+ clearTimeout(stremioRetryTimer);stremioRetryTimer=null;
+ failedAssetId=item.id;stremioResolving='';stremioExcluded=[];stremioAssetKey=item.id;
+ stremioCandidates=[];stremioCandidateIndex=-1;warmedStreams.delete(key);
+ if(remoteWarmKey===key)clearRemoteWarm();
+ standby();activeId=item.id;
+ const seconds=Math.ceil(delay/1000);
+ $('syncLabel').textContent=`${reason} · nova tentativa automática em ${seconds}s`;
+ $('standbyTitle').textContent=item.title;
+ $('standbyDesc').textContent=`${reason} Vou tentar novamente em ${seconds}s; a atração continua no horário.`;
+ stremioRetryTimer=setTimeout(()=>{
+   stremioRetryTimer=null;
+   if(!started||failedAssetId!==item.id)return;
+   const current=playingAt(new Date());
+   if(current?.item.id!==item.id)return;
+   failedAssetId='';syncPlayback(new Date(),true);
+ },delay);
 }
 function holdCurrentUntilPlayback(item,offset){
   const idx=schedule.findIndex(x=>x.id===item.id);
@@ -444,7 +547,10 @@ function playStremioCandidate(item,index,version){
   if(version!==stremioVersion || !started)return;
   const candidate=stremioCandidates[index];
   if(!candidate)return;
+  if(remoteWarmKey===episodeKey(item.asset)&&remoteWarmUrl!==candidate.url)clearRemoteWarm();
   stremioCandidateIndex=index;
+  stremioPlaybackStarted=false;
+  stremioAutoplayBlocked=false;
   lastRemoteProgressAt=Date.now();
   clearStremioLoadTimer();destroyHls();
   selectVideo(true);
@@ -459,11 +565,14 @@ function playStremioCandidate(item,index,version){
     // 'loadedmetadata' não prova que os primeiros frames chegarão: o antigo
     // player podia ficar indefinidamente esperando bytes depois dessa etapa.
     stremioLoadTimer=setTimeout(()=>{
-      if(version===stremioVersion && activeId===item.id && activeSource===candidate.url
-         && !player.paused && !player.ended && player.readyState<3
-         && Date.now()-lastRemoteProgressAt>7000){
-        $('syncLabel').textContent='Fonte sem frames após metadados; tentando outra…';
-        nextStremioCandidate();
+      if(version===stremioVersion && activeId===item.id && activeSource===candidate.url && !stremioPlaybackStarted){
+        if(stremioAutoplayBlocked){
+          setTuning(false);$('watchButton').innerHTML='▶ <span>TOCAR VÍDEO</span>';
+          $('syncLabel').textContent='O navegador aguardou um clique para iniciar esta fonte. Toque em “Tocar vídeo”.';
+        }else{
+          $('syncLabel').textContent=`${currentProvider} não entregou frames de vídeo (readyState ${player.readyState}, erro ${player.error?.code||'nenhum'}); tentando outra fonte…`;
+          nextStremioCandidate();
+        }
       }
     },9500);
     // A grade pode ter passado pelo horário previsto enquanto o addon carregava.
@@ -480,10 +589,21 @@ function playStremioCandidate(item,index,version){
     applyVolume();
     player.play().then(()=>{setTuning(false);
       $('syncLabel').textContent=`${currentProvider} · fonte ${index+1}/${stremioCandidates.length} · em transmissão`;
-    }).catch(async()=>{
+    }).catch(async error=>{
+      if(version!==stremioVersion||activeSource!==candidate.url)return;
       player.muted=true;
-      try{await player.play();$('syncLabel').textContent='Iniciou sem áudio; clique no ícone 🔇 para ativar';}
-      catch{$('syncLabel').textContent='Navegador exige clique em Assistir para iniciar';}
+      try{await player.play();muted=true;applyVolume();$('syncLabel').textContent='Áudio bloqueado pelo navegador; a reprodução começou sem som. Use o ícone de som para ativá-lo.';}
+      catch(retryError){
+        if(version!==stremioVersion||activeSource!==candidate.url)return;
+        if(error?.name==='NotAllowedError'||retryError?.name==='NotAllowedError'){
+          stremioAutoplayBlocked=true;
+          setTuning(false);$('watchButton').innerHTML='▶ <span>TOCAR VÍDEO</span>';
+          $('syncLabel').textContent='O navegador bloqueou a reprodução automática. Toque em “Tocar vídeo” para iniciar.';
+        }else{
+          $('syncLabel').textContent=`${currentProvider} · reprodução recusada (${retryError?.name||error?.name||'erro de mídia'}); tentando outra fonte…`;
+          nextStremioCandidate();
+        }
+      }
     });
   };
   stremioLoadTimer=setTimeout(()=>{
@@ -510,24 +630,31 @@ function playStremioCandidate(item,index,version){
 function nextStremioCandidate(){
   if(!started)return;
   setTuning(true,'Tentando outra fonte de vídeo…');
-  const current=playingAt(new Date())?.item;
+  const current=schedule.find(x=>x.id===activeId) || playingAt(new Date())?.item;
   if(!current||current.asset?.source!=='stremio'||current.id!==activeId)return;
   clearStremioLoadTimer();
+  const cacheKey=episodeKey(current.asset), cached=warmedStreams.get(cacheKey);
+  const failedCandidate=stremioCandidates[stremioCandidateIndex];
+  if(cached&&failedCandidate?.url){
+    cached.result.candidates=(cached.result.candidates||[]).filter(c=>c.url!==failedCandidate.url);
+    if(!cached.result.candidates.length)warmedStreams.delete(cacheKey);
+  }
   if(stremioCandidateIndex+1<stremioCandidates.length){
     playStremioCandidate(current,stremioCandidateIndex+1,stremioVersion);
     return;
   }
+  warmedStreams.delete(cacheKey);
   const failed=currentProvider;
   if(failed && !stremioExcluded.includes(failed))stremioExcluded.push(failed);
   stremioCandidates=[];stremioCandidateIndex=-1;
   standby();activeId='';
-  $('syncLabel').textContent=`${failed} esgotado; procurando outro addon…`;
+  $('syncLabel').textContent=unsupportedCandidateCount?`${failed} esgotado; procurando outro addon compatível com o navegador…`:`${failed} esgotado; procurando outro addon…`;
   openStremio(current,0);
 }
 async function openStremio(item,offset,force=false){
   if(stremioResolving===item.id && !force)return;
   const asset=item.asset;
-  if(stremioAssetKey!==item.id){stremioExcluded=[];stremioAssetKey=item.id;}
+  if(stremioAssetKey!==item.id){clearTimeout(stremioRetryTimer);stremioRetryTimer=null;stremioExcluded=[];stremioAssetKey=item.id;unsupportedCandidateCount=0;}
   const version=++stremioVersion;
   stremioRequestedOffset=Math.max(0,Number(offset)||0);stremioRequestedAt=Date.now();
   const key=item.id;
@@ -535,39 +662,50 @@ async function openStremio(item,offset,force=false){
   // Libera o player imediatamente; não deixa o vídeo anterior tocando enquanto
   // o servidor procura a próxima fonte.
   if(activeId!==item.id){standby();activeId=item.id;}
-  setTuning(true,'Buscando '+asset.show+' · '+(asset.season||0)+'x'+(asset.episode||0));
+  const requested=asset.kind==='movie'?asset.name:`${asset.show} · T${String(asset.season||0).padStart(2,'0')}E${String(asset.episode||0).padStart(2,'0')}`;
+  setTuning(true,'Buscando '+requested);
   stremioResolving=key;
   const exclude=force?[]:stremioExcluded;
-  $('syncLabel').textContent='Procurando episódio nos addons Stremio…';
+  $('syncLabel').textContent=`Procurando ${asset.kind==='movie'?'filme':'episódio'} nos addons Stremio…`;
   try{
     const cacheKey=episodeKey(asset), warm=warmedStreams.get(cacheKey);
     let result;
-    if(!exclude.length && warm && Date.now()-warm.time<240000){
+    if(!exclude.length && warm && (warm.confirmed || Date.now()-warm.time<240000)){
       result=warm.result;
     }else{
       const controller=new AbortController();streamRequest=controller;
       const response=await fetch('/api/stremio/resolve',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,
-        body:JSON.stringify({imdbId:asset.imdbId,season:asset.season,episode:asset.episode,kind:asset.kind,excludeProviders:exclude,expectedShow:asset.show,selectedYear:year})});
+        body:JSON.stringify({imdbId:asset.imdbId,season:asset.season,episode:asset.episode,absoluteEpisode:asset.absoluteEpisode,kind:asset.kind,excludeProviders:exclude,expectedShow:asset.show,selectedYear:year})});
       result=await response.json();
       if(streamRequest===controller)streamRequest=null;
     }
     if(version!==stremioVersion || !started)return;
     stremioResolving='';
     const now=playingAt(new Date());
-    if(!now || (now.item.id!==key && !schedule.some(x=>x.id===key)) || year!==Number(asset.selectedYear||year))return;
+    if(!now || now.item.id!==key || year!==Number(asset.selectedYear||year))return;
     if(!result.ok){
-      if(tryAlternativeEpisode(item))return;
+      const requested=asset.kind==='movie'?asset.name:`${asset.show} · T${String(asset.season||0).padStart(2,'0')}E${String(asset.episode||0).padStart(2,'0')}`;
+      const attempts=result.attempts||[];
+      const transient=attempts.some(x=>/timeout|temporar|backoff|urlerror|connection|HTTP 5\d\d|408|429|timed out|sem resposta/i.test(String(x.status||'')));
+      if(transient){
+        const reason=`${requested}: os addons estão temporariamente sem resposta.`;
+        $('notice').textContent=(result.reason||'Falha temporária nos addons')+' '+attempts.map(x=>x.addon+': '+x.status).join(' | ');
+        deferStremioRetry(item,reason);return;
+      }
       failedAssetId=item.id;standby();activeId=item.id;
-      retireUnplayable(item,'Episódio sem fonte disponível; seguindo programação',true);
-      $('notice').textContent=(result.reason||'Fonte indisponível')+' '+(result.attempts||[]).map(x=>x.addon+': '+x.status).join(' | ');
+      retireUnplayable(item,unsupportedCandidateCount?`${requested}: fontes encontradas, mas incompatíveis com o navegador.`:`${requested}: nenhum addon entregou uma fonte reproduzível. O item solicitado foi mantido; não o troquei por outro episódio.`,true);
+      $('notice').textContent=(result.reason||'Fonte indisponível')+' '+attempts.map(x=>x.addon+': '+x.status).join(' | ');
       return;
     }
-    currentProvider=result.provider;
+    currentProvider=result.provider;unsupportedCandidateCount=0;
     stremioCandidates=(Array.isArray(result.candidates)&&result.candidates.length?result.candidates:[{url:result.url,format:result.format}])
       .filter(c=>c&&typeof c.url==='string'&&
         (location.protocol!=='https:'||!c.url.startsWith('http://')));
+    result={...result,candidates:stremioCandidates};
+    if(stremioCandidates.length)warmedStreams.set(cacheKey,{time:Date.now(),result,confirmed:!!warm?.confirmed});
     stremioCandidateIndex=-1;
     if(!stremioCandidates.length){
+      warmedStreams.delete(cacheKey);
       if(!stremioExcluded.includes(currentProvider))stremioExcluded.push(currentProvider);
       $('syncLabel').textContent='Fonte HTTP bloqueada em site HTTPS; tentando outro addon…';
       openStremio(item,offset);return;
@@ -575,8 +713,9 @@ async function openStremio(item,offset,force=false){
     playStremioCandidate(item,0,version);
   }catch(error){
     if(version!==stremioVersion)return;
-    stremioResolving='';if(tryAlternativeEpisode(item))return;failedAssetId=item.id;standby();activeId=item.id;
-    retireUnplayable(item,'Falha temporária nos addons; seguindo para próxima atração',false);
+    const requested=asset.kind==='movie'?asset.name:`${asset.show} T${asset.season}E${asset.episode}`;
+    $('notice').textContent=`Consulta temporariamente indisponível para ${requested}: ${error?.name||'erro de conexão'}`;
+    deferStremioRetry(item,`Não consegui consultar os addons para ${requested}.`);
   }
 }
 
@@ -646,14 +785,15 @@ function syncPlayback(now,force=false){if(!started)return;const c=playingAt(now)
   const source=item.asset.path,mediaTime=(item.mediaOffset||0)+offset;
   if(!force&&activeId===item.id&&activeSource===source)return; // não salta trechos durante buffering
   selectVideo(false);activeId=item.id;activeSource=source;const localVersion=++retryVersion;
-  player.pause();player.style.display='block';player.src=source;setTuning(true,'Abrindo vinheta, promo ou programa…');applyVolume();$('screen').classList.add('video-ready');
-  const play=()=>{if(localVersion!==retryVersion||activeId!==item.id)return;
+  player.pause();player.preload='auto';player.style.display='block';player.src=source;player.load();setTuning(true,'Abrindo vídeo local…');applyVolume();$('screen').classList.add('video-ready');
+  let localReadyHandled=false;
+  const play=()=>{if(localReadyHandled||localVersion!==retryVersion||activeId!==item.id)return;localReadyHandled=true;
     const target=Math.max(0,Math.min(mediaTime,Number.isFinite(player.duration)?Math.max(0,player.duration-.12):mediaTime));
     try{player.currentTime=target}catch{}
     setTuning(false);if(source.startsWith('/media/'))initAudioGraph();soundContext?.resume().catch(()=>{});
     player.play().catch(()=>{$('syncLabel').textContent='Clique em Assistir para liberar o vídeo';});
   };
-  if(player.readyState>=1)play();else player.addEventListener('loadedmetadata',play,{once:true});
+  if(player.readyState>=2)play();else {player.addEventListener('loadeddata',play,{once:true});player.addEventListener('canplay',play,{once:true});}
 }
 let catalogRequestInFlight=null;
 let fastEpisodeIndexLoaded=false;
@@ -661,7 +801,9 @@ async function fetchEpisodeIndex(force=false){
   // Endpoint leve: lê SOMENTE os metadados salvos, sem escanear MP4 nem chamar addons.
   // Assim 5.000 episódios podem gerar a grade imediatamente, antes do scan local.
   if(fastEpisodeIndexLoaded && !force)return;
-  const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),7000);
+  // A resposta pode ter vários megabytes; em celulares e Wi-Fi lento, 7s
+  // abortava a transferência antes de o navegador conseguir montar o guia.
+  const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),45000);
   try{
     const response=await fetch('/api/catalog/episodes',{cache:'no-store',signal:controller.signal});
     if(!response.ok)throw Error('HTTP '+response.status);
@@ -671,10 +813,17 @@ async function fetchEpisodeIndex(force=false){
       const known=new Map(catalog.map(x=>[x.id,x]));
       episodes.forEach(x=>known.set(x.id,x));
       catalog=[...known.values()];
+      // Populate the library before the CPU-heavy daily schedule is built;
+      // this keeps the mobile UI informative even on slower devices.
+      $('mediaCount').textContent=catalog.length;
+      renderLibrary();
+      renderCatalogFilter();
       if(!started || !schedule.some(e=>e.isMain&&e.asset))buildSchedule(new Date());
       $('notice').textContent=`Guia gerado com ${episodes.length} episódios catalogados. As fontes são verificadas ao sintonizar.`;
     }
-    fastEpisodeIndexLoaded=true;
+    // Uma resposta vazia não significa que o índice esteja carregado. Não
+    // marcar como concluído permite que a recuperação automática tente de novo.
+    fastEpisodeIndexLoaded=episodes.length>0;
   }catch(error){
     // Compatível com versões antigas do servidor: cai para /api/catalog.
   }finally{clearTimeout(timer)}
@@ -701,6 +850,7 @@ async function refreshCatalog(){
       const merged=new Map(catalog.filter(x=>x.source==='stremio'&&x.kind==='episode').map(x=>[x.id,x]));
       fresh.forEach(x=>merged.set(x.id,x));
       catalog=[...merged.values()];
+      renderCatalogFilter();
     }
     // Quando a grade é só uma estrutura de contingência, gere a programação
     // real assim que aparecer o primeiro episódio efetivamente verificado.
@@ -723,7 +873,7 @@ async function refreshCatalog(){
   try{return await catalogRequestInFlight}
   finally{catalogRequestInFlight=null}
 }
-function setYear(value){stremioVersion++;stremioResolving='';stremioExcluded=[];stremioAssetKey='';stremioCandidates=[];stremioCandidateIndex=-1;clearStremioLoadTimer();destroyHls();freeMode=false;$('liveButton').hidden=true;const n=Math.max(MIN_YEAR,Math.min(MAX_YEAR,Number(value)));
+function setYear(value){stremioVersion++;stremioResolving='';clearTimeout(stremioRetryTimer);stremioRetryTimer=null;stremioRetryCounts.clear();failedAssetId='';stremioExcluded=[];stremioAssetKey='';stremioCandidates=[];stremioCandidateIndex=-1;clearStremioLoadTimer();clearRemoteWarm();destroyHls();freeMode=false;$('liveButton').hidden=true;const n=Math.max(MIN_YEAR,Math.min(MAX_YEAR,Number(value)));
   if(n===year)return;
   // Troca imediata: a requisição e o vídeo do ano anterior não devem segurar a UI.
   clearPendingRequest();standby();activeId='';activeSource='';nextWarmKey='';
@@ -732,15 +882,44 @@ function setYear(value){stremioVersion++;stremioResolving='';stremioExcluded=[];
   document.body.classList.add('era-changing');
   clearTimeout(transitionTimeout);
   transitionTimeout=setTimeout(()=>document.body.classList.remove('era-changing'),1600);
-  closeExternal(false);$('externalCTA').hidden=true;year=n;localStorage.setItem('cnTimelineYear',year);buildSchedule(new Date());
+  closeExternal(false);$('externalCTA').hidden=true;year=n;localStorage.setItem('cnTimelineYear',year);renderCatalogFilter();buildSchedule(new Date());
 }
 function init(){for(let y=MIN_YEAR;y<=MAX_YEAR;y++){const btn=document.createElement('button');btn.type='button';btn.textContent=y;btn.setAttribute('aria-label','Transmissão de '+y);btn.setAttribute('aria-pressed',String(year===y));btn.dataset.year=String(y);btn.addEventListener('click',()=>setYear(y));$('yearMarkers').append(btn)}
+  const modal=$('scheduleModal');
+  const closeSchedule=()=>{modal.hidden=true;$('openScheduleSettings').focus()};
+  $('openScheduleSettings').addEventListener('click',()=>{modal.hidden=false;renderCatalogFilter();$('closeScheduleSettings').focus()});
+  $('closeScheduleSettings').addEventListener('click',closeSchedule);
+  modal.querySelectorAll('[data-close-schedule]').forEach(x=>x.addEventListener('click',closeSchedule));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)closeSchedule()});
+  modal.querySelectorAll('[data-schedule-tab]').forEach(tab=>tab.addEventListener('click',()=>{
+    modal.querySelectorAll('[data-schedule-tab]').forEach(x=>{const active=x===tab;x.classList.toggle('is-active',active);x.setAttribute('aria-selected',String(active))});
+    const target=tab.dataset.scheduleTab==='program'?'scheduleProgramPanel':'scheduleShowsPanel';$(target).scrollIntoView({behavior:'smooth',block:'nearest'});
+  }));
+  const drop=$('scheduleDropzone');
+  drop.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='copy';drop.classList.add('drag-over')});
+  drop.addEventListener('dragleave',e=>{if(!drop.contains(e.relatedTarget))drop.classList.remove('drag-over')});
+  drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag-over');const name=e.dataTransfer.getData('text/plain');if(name)toggleFavorite(name,true)});
+  $('clearScheduleShows').addEventListener('click',()=>{selectedShows.clear();localStorage.setItem('cnFavoriteShows','[]');renderCatalogFilter();if(started&&catalogMode==='filtered')buildSchedule(new Date())});
+  $('catalogMode').value=catalogMode;
+  $('catalogMode').addEventListener('change',e=>{catalogMode=e.target.value;localStorage.setItem('cnCatalogMode',catalogMode);updateCatalogFilterStatus();buildSchedule(new Date())});
+  $('catalogFilterSearch').addEventListener('input',renderCatalogFilter);
+  renderCatalogFilter();
   const guide=$('guide');
   guide.setAttribute('tabindex','0');guide.setAttribute('role','region');guide.setAttribute('aria-label','Grade de programação rolável');
   guide.addEventListener('keydown',e=>{if(!['ArrowDown','ArrowUp','PageDown','PageUp'].includes(e.key))return;e.preventDefault();guideBrowsingUntil=Date.now()+20000;guide.scrollBy({top:(e.key==='ArrowDown'?110:e.key==='ArrowUp'?-110:e.key==='PageDown'?380:-380),behavior:'smooth'});});
   for(const type of ['touchstart','wheel','pointerdown','keydown'])guide.addEventListener(type,()=>{guideBrowsingUntil=Date.now()+18000;},{passive:type!=='keydown'});
   $('wrongSourceButton').addEventListener('click',markWrongEpisode);
-  $('watchButton').addEventListener('click',()=>{started=true;muted=false;applyVolume();soundContext?.resume().catch(()=>{});$('watchButton').innerHTML='● <span>TRANSMITINDO</span>';$('syncLabel').textContent='Sincronizado em tempo real';failedAssetId='';syncPlayback(new Date(),true)});
+  $('watchButton').addEventListener('click',()=>{
+    clearTimeout(stremioRetryTimer);stremioRetryTimer=null;
+    const current=playingAt(new Date())?.item;
+    if(started&&current?.asset?.source==='stremio'&&current.id===activeId&&activeSource&&player.paused){
+      muted=false;player.muted=false;applyVolume();
+      player.play().then(()=>{$('watchButton').innerHTML='● <span>TRANSMITINDO</span>';setTuning(false);$('syncLabel').textContent=`${currentProvider} · iniciando reprodução`;})
+        .catch(error=>{if(error?.name==='NotAllowedError'){$('syncLabel').textContent='O navegador ainda bloqueou esta reprodução. Pressione Tocar vídeo novamente.';return}$('syncLabel').textContent=`Não foi possível iniciar esta fonte (${error?.name||'erro do navegador'}). Tentando outra…`;nextStremioCandidate();});
+      return;
+    }
+    started=true;muted=false;applyVolume();soundContext?.resume().catch(()=>{});$('watchButton').innerHTML='● <span>TRANSMITINDO</span>';$('syncLabel').textContent='Sincronizado em tempo real';failedAssetId='';syncPlayback(new Date(),true)
+  });
   $('soundButton').addEventListener('click',()=>{muted=!muted;applyVolume();});
   $('volumeSlider').addEventListener('input',e=>{volume=Number(e.target.value);muted=false;localStorage.setItem('cnVolume',volume);applyVolume()});
   $('normalizeButton').addEventListener('click',()=>{stableVolume=!stableVolume;localStorage.setItem('cnStableVolume',stableVolume);applyStableVolume()});
@@ -871,6 +1050,13 @@ function init(){for(let y=MIN_YEAR;y<=MAX_YEAR;y++){const btn=document.createEle
         },14000);
       });
       videoEl.addEventListener('playing',()=>{
+        if(videoEl===remotePlayer){
+          stremioPlaybackStarted=true;
+          const current=schedule.find(x=>x.id===activeId),cacheKey=episodeKey(current?.asset),cached=warmedStreams.get(cacheKey);
+          if(cached){cached.confirmed=true;cached.time=Date.now();}
+          clearRemoteWarm();
+          stremioRetryCounts.delete(cacheKey);clearTimeout(stremioRetryTimer);stremioRetryTimer=null;failedAssetId='';
+        }
         if(activeStallStart && Date.now()-activeStallStart>450){
           const current=schedule.find(x=>x.id===activeId);
           if(current && Number.isFinite(videoEl.duration)&&videoEl.duration>0){
@@ -882,9 +1068,12 @@ function init(){for(let y=MIN_YEAR;y<=MAX_YEAR;y++){const btn=document.createEle
     }
     videoEl.addEventListener('error',()=>{
       if(!started||videoEl!==player)return;
-      setTuning(false);const current=playingAt(new Date())?.item;
+      setTuning(false);const current=schedule.find(x=>x.id===activeId) || playingAt(new Date())?.item;
       if(current?.id===activeId&&current.asset?.source==='stremio'){
-        $('syncLabel').textContent='Fonte falhou no player; testando próxima…';
+        const unsupported=videoEl.error?.code===4;
+        if(unsupported)unsupportedCandidateCount++;
+        const errorNames={1:'carga cancelada',2:'falha de rede/conexão',3:'falha ao decodificar o vídeo',4:'formato não suportado'};
+        $('syncLabel').textContent=`${currentProvider}: ${errorNames[videoEl.error?.code]||'erro de reprodução'} (código ${videoEl.error?.code||'?'}) · tentando outra fonte…`;
         nextStremioCandidate();return;
       }
       failedAssetId=activeId;standby();$('notice').textContent='Este vídeo não pôde ser reproduzido. Verifique codec, URL, Range e CORS.';
@@ -910,12 +1099,14 @@ function init(){for(let y=MIN_YEAR;y<=MAX_YEAR;y++){const btn=document.createEle
   refreshCatalog();
   pollAutoSync();setInterval(pollAutoSync,20000);
   // Recuperação sem apertar botões após falha no catálogo inicial.
-  setInterval(()=>{if(!catalog.length)refreshCatalog()},30000);
+  // Promos e bumpers podem preencher catalog.length mesmo quando os episódios
+  // ainda não chegaram. Recuperar com base na presença de episódios reais.
+  setInterval(()=>{if(!catalog.some(x=>x.kind==='episode'&&x.path))refreshCatalog()},30000);
   setInterval(()=>{const now=new Date();if(dateKey(now)!==lastDateKey){
     if(started && activeSource && player.style.display!=='none' && !player.ended && player.readyState>=1 && Number.isFinite(player.duration) && player.currentTime<player.duration-.4){
       $('syncLabel').textContent='Terminando vídeo da noite anterior, sem cortar na virada';return;
     }
-    buildSchedule(now);return;}if(!document.hidden){updateStatus(now);if(started){syncPlayback(now);warmNextEpisode(now)}}},1000);
+    buildSchedule(now);return;}if(started)warmNextEpisode(now);if(!document.hidden){updateStatus(now);if(started){syncPlayback(now);warmNextLocal(now)}}},1000);
 }
 
 // Pesquisador de referências: até cinco candidatos, sem inferir automaticamente
@@ -946,7 +1137,7 @@ function initResearch(){
           a.target='_blank';a.rel='noopener noreferrer';a.textContent=['Internet Archive ↗','YouTube ↗','Pesquisa web ↗'][i];sources.append(a)});
         results.append(sources);
       }
-      data.items?.slice(0,5).forEach(v=>{
+      data.items?.slice(0,15).forEach(v=>{
         const card=document.createElement('article');card.className='research-item';
         const h=document.createElement('strong');h.textContent=v.title||v.id;
         const desc=document.createElement('p');desc.textContent=v.historicalStatus+' · '+(v.license||'licença não declarada');

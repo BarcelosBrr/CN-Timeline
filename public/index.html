@@ -5,22 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#081b45">
   <meta name="description" content="Canal retrô local, com timeline de 2015 a 2021 e programação diária simulada.">
-  <title>Cartoon Timeline v1.02.1 — Guia corrigido · A TV da sua infância</title>
-  <link rel="stylesheet" href="/style.css">
+  <title>Cartoon Timeline v1.14 — A TV da sua infância</title>
+  <link rel="stylesheet" href="/style.css?v=1.14">
 </head>
 <body data-season="normal" data-era="dimensional" data-year="2017">
   <div class="backdrop" aria-hidden="true"><div class="backdrop-noise"></div><div class="halo halo-a"></div><div class="halo halo-b"></div></div>
   <div class="season-decoration" aria-hidden="true">
-    <div class="halloween-art"><span class="pumpkin left">🎃</span><span class="pumpkin right">💀</span><span class="bat bat-a">🦇</span><span class="bat bat-b">🦇</span><span class="web">🕸️</span></div>
-    <div class="christmas-art"><div class="lights"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="tree">🎄</span><span class="gift">🎁</span><span class="snow snow-one">❄</span><span class="snow snow-two">❄</span></div>
-    <div class="easter-art"><span class="egg egg-a">🥚</span><span class="egg egg-b">🥚</span><span class="bunny">🐰</span><span class="flower">🌼</span></div>
-    <div class="vacation-art"><span>☀️</span><span>🏖️</span><span>🏄</span></div><div class="newyear-art"><span>🎆</span><span>✨</span><span>🎊</span></div><div class="summer-art"><span>🏖️</span><span>☀️</span><span>🍉</span></div><div class="thanksgiving-art"><span>🍁</span><span>🍂</span></div>
+    <div class="halloween-art"><span class="pumpkin left">🎃</span><span class="pumpkin right">💀</span><span class="pumpkin mini">🎃</span><span class="bat bat-a">🦇</span><span class="bat bat-b">🦇</span><span class="bat bat-c">🦇</span><span class="web">🕸️</span><span class="web web-b">🕸️</span><span class="moon">☾</span></div>
+    <div class="christmas-art"><div class="lights"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="tree">🎄</span><span class="gift">🎁</span><span class="gift gift-b">🎁</span><span class="snow snow-one">❄</span><span class="snow snow-two">❄</span><span class="snow snow-three">❄</span><span class="candy">🍬</span></div>
+    <div class="easter-art"><span class="egg egg-a">🥚</span><span class="egg egg-b">🥚</span><span class="egg egg-c">🥚</span><span class="bunny">🐰</span><span class="flower">🌼</span><span class="flower flower-b">🌸</span><span class="basket">🧺</span></div>
+    <div class="vacation-art"><span>☀️</span><span>🏖️</span><span>🏄</span><span>🕶️</span><span>🌊</span></div><div class="newyear-art"><span>🎆</span><span>✨</span><span>🎊</span><span>🎇</span><span>⭐</span></div><div class="summer-art"><span>🏖️</span><span>☀️</span><span>🍉</span><span>🌴</span><span>🧃</span></div><div class="thanksgiving-art"><span>🍁</span><span>🍂</span><span>🌽</span><span>🥧</span></div>
   </div>
   <div class="era-curtain" id="eraCurtain" aria-hidden="true"><div class="era-curtain-tiles"><i></i><i></i><i></i><i></i><i></i></div><strong id="eraCurtainTitle">CARTOON NETWORK</strong><small>MUDANDO DE ÉPOCA ✦</small></div>
   <div class="shell">
     <header class="header">
       <div class="identity">
-        <div class="cn-mark" aria-label="CN retrô"><span>C</span><span>N</span></div>
+        <div class="cn-mark"><img src="/media/images/logo_cn.png" alt="Cartoon Network"></div>
         <div class="identity-text"><strong>Cartoon <b>Timeline</b></strong><small>2015 — 2021 · TRANSMISSÃO SIMULADA</small></div>
       </div>
       <div class="header-status"><button type="button" id="themeButton" class="theme-toggle" aria-label="Alternar modo claro e escuro" title="Alternar tema">☼ Claro</button><span class="status-dot"></span><span class="status-label">NO AR</span><span class="header-divider"></span><time id="clock">--:--:--</time></div>
@@ -37,7 +37,7 @@
           <section class="player-card" aria-label="Player do canal">
             <div class="player-top"><div class="live-tag"><i></i> CARTOON TIMELINE <b>TV</b></div><div class="player-top-right"><span id="onAirYear">2017</span><span class="sep"></span><span id="playerQuality">SEM CORTES · RETRÔ</span></div></div>
             <div class="screen" id="screen">
-              <video id="player" playsinline preload="metadata"></video><video id="stremioPlayer" playsinline preload="metadata"></video>
+              <video id="player" playsinline preload="auto"></video><video id="stremioPlayer" playsinline preload="auto"></video>
               <div class="external-cta" id="externalCTA" hidden>
                 <div class="external-card">
                   <span class="external-pill">☁ PLAYER EXTERNO · TRANSMISSÃO</span>
@@ -50,9 +50,9 @@
               <button type="button" id="closeExternal" class="external-close" hidden>✕ Fechar player externo e voltar à TV</button>
               <div class="tuning-overlay" id="tuningOverlay" hidden aria-live="polite"><div class="tuning-mark">CN</div><strong>Sintonizando o canal…</strong><span id="tuningStatus">Buscando a próxima atração</span><div class="tuning-bar"><i></i></div></div><div class="screen-placeholder" id="standby">
                 <div class="screen-checks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-                <div class="standby-inner"><div class="placeholder-cn"><span>C</span><span>N</span></div><div class="placeholder-overline">CARTOON NETWORK • <span id="videoYear">2017</span></div><h2 id="standbyTitle">A próxima aventura começa aqui.</h2><p id="standbyDesc">O canal está sincronizado. Adicione vídeos ao acervo para assistir.</p></div>
+                <div class="standby-inner"><div class="placeholder-cn"><img src="/media/images/logo_cn.png" alt="Cartoon Network"></div><div class="placeholder-overline">CARTOON NETWORK • <span id="videoYear">2017</span></div><h2 id="standbyTitle">A próxima aventura começa aqui.</h2><p id="standbyDesc">O canal está sincronizado. Adicione vídeos ao acervo para assistir.</p></div>
               </div>
-              <div class="corner-logo"><img src="/cn-logo.svg" alt="Cartoon Network" draggable="false"></div>
+              <div class="corner-logo"><img src="/media/images/logo_cn.png" alt="Cartoon Network" draggable="false"></div>
               <div class="screen-event" id="eventOverlay"></div>
             </div>
             <div class="player-controls">
@@ -73,17 +73,18 @@
 
         <aside class="sidebar" aria-label="Guia e biblioteca">
           <section class="sidebar-card guide-card" id="guideCard"><div class="sidebar-heading"><div><div class="caps">GUIA DO CANAL</div><h2>Hoje na TV</h2></div><span class="guide-date" id="virtualDate">--/--/2017</span></div><div class="guide-filters"><span class="filter-active">24 HORAS</span><span id="programCount">— atrações</span></div><div class="guide-scroll" id="guide" tabindex="0" role="region" aria-label="Guia de programação, role com o dedo ou setas"></div></section>
+          <button type="button" id="openScheduleSettings" class="schedule-settings-button"><span class="schedule-button-icon">♥</span><span><small>SUA PROGRAMAÇÃO</small><strong>Personalizar catálogo</strong></span><span class="schedule-button-arrow">↗</span></button>
           <section class="sidebar-card blocks-card" aria-label="Blocos por ano">
             <div class="sidebar-heading"><div><div class="caps">PROGRAMAÇÃO DA ÉPOCA</div><h2>Universo CN <span>✴</span></h2></div><span class="mini-star">★</span></div>
             <div class="block-grid" id="blockList"></div>
             <div class="block-note">As grades americanas são referências; Adult Swim é opcional, pois no Brasil era transmitido por outros canais entre 2015–2021. <strong>Opção experimental:</strong> <label><input type="checkbox" id="adultMode"> Adult Swim (recriação EUA, se houver vídeos elegíveis)</label></div><div class="block-note">Cada bloco aparece apenas quando é compatível com o período selecionado. <strong>Grade inspirada em registros da época.</strong></div>
           </section>
           <section class="sidebar-card research-card" id="researchCard" aria-label="Pesquisa de mídia histórica">
-            <div class="sidebar-heading"><div><div class="caps">ACERVO INTELIGENTE · V1.01</div><h2>Descobrir vinhetas</h2></div><span class="mini-star">✦</span></div>
-            <p class="research-caption">Até 5 candidatos por busca. O ano de publicação não comprova que o vídeo passou na TV naquele ano. Revise e aprove cada importação.</p>
+            <div class="sidebar-heading"><div><div class="caps">ACERVO INTELIGENTE · V1.14</div><h2>Descobrir vinhetas</h2></div><span class="mini-star">✦</span></div>
+            <p class="research-caption">Até 15 referências por busca, com termos em português e inglês. O ano de publicação não comprova exibição na TV; revise a época e os direitos.</p>
             <div class="research-fields"><label>Ano<select id="researchYear"><option>2015</option><option>2016</option><option selected>2017</option><option>2018</option><option>2019</option><option>2020</option><option>2021</option></select></label><label>Tipo<select id="researchKind"><option value="vinhetas">Vinhetas</option><option value="promos">Promos</option><option value="chamadas">Chamadas</option><option value="anuncios">Anúncios</option><option value="especiais">Especiais</option></select></label></div>
             <label class="research-query">Refinar busca (opcional)<input id="researchQuery" type="search" maxlength="90" placeholder="Deixe em branco ou informe um tema específico…"></label>
-            <button id="researchButton" class="refresh-button" type="button">⌕ Buscar até 5 referências</button><div id="researchResults" class="research-results" aria-live="polite"></div>
+            <button id="researchButton" class="refresh-button" type="button">⌕ Buscar até 15 referências</button><div id="researchResults" class="research-results" aria-live="polite"></div>
             <details class="research-editor"><summary>Recortar compilações com FFmpeg (localhost)</summary><p>Coloque um arquivo autorizado em <code>media/pendentes/compilacoes/</code>, selecione início e fim de cada vinheta e aprove individualmente.</p><div id="compilationList"></div><label>Arquivo<select id="clipFile"></select></label><label>Nome do clipe<input id="clipTitle" placeholder="vinheta_cn_2017_01"></label><div class="research-fields"><label>Início (segundos)<input id="clipStart" type="number" min="0" step=".1" value="0"></label><label>Fim (segundos)<input id="clipEnd" type="number" min=".1" step=".1" value="10"></label></div><label class="confirm"><input id="clipRights" type="checkbox"> Tenho permissão para utilizar e editar este vídeo</label><button id="suggestCuts" class="refresh-button" type="button">✦ Sugerir até 5 cortes de cena</button><div id="suggestedCuts" class="research-results"></div><button id="clipButton" class="refresh-button" type="button">✂ Recortar trecho selecionado</button><p id="clipResult"></p></details>
           </section>
           <section class="sidebar-card library-card"><div class="sidebar-heading"><div><div class="caps">SEU ACERVO</div><h2>Biblioteca</h2></div><div class="library-count" id="mediaCount">0</div></div><p id="notice">O guia usa episódios catalogados e historicamente elegíveis; a compatibilidade de cada stream é verificada quando o player sintoniza.</p><details class="media-admin"><summary>Biblioteca e manutenção</summary><div class="media-explorer"><label for="mediaYear">FILTRAR ACERVO</label><div class="media-filters"><select id="mediaYear" aria-label="Ano do acervo"><option value="auto">Ano da Timeline</option><option value="2015">2015</option><option value="2016">2016</option><option value="2017">2017</option><option value="2018">2018</option><option value="2019">2019</option><option value="2020">2020</option><option value="2021">2021</option></select><select id="mediaKind" aria-label="Tipo de mídia"><option value="all">Todas</option><option value="episode">Episódios</option><option value="movie">Filmes</option><option value="call">Chamadas</option><option value="promo">Promos</option><option value="bumper">Vinhetas</option><option value="ad">Anúncios</option><option value="short">Curtas</option><option value="special">Especiais</option></select></div><div id="mediaLibrarySummary" class="media-library-summary">Acervo por ano</div><div id="mediaLibraryList" class="media-library-list" aria-live="polite"></div></div><div id="promoSummary" class="promo-summary">📣 Chamadas de desenhos prontas para catalogar</div><button class="refresh-button" id="refreshButton">↻ Atualizar acervo (sem trocar grade)</button><button class="refresh-button" id="regenerateButton" type="button">▦ Gerar nova programação</button><button class="refresh-button" id="probeStremioButton" type="button">◉ Verificar addons Stremio</button><button class="refresh-button" id="verifyMoviesButton" type="button">🍿 Verificar filmes Cine Cartoon</button><p class="sync-caption" id="stremioStatus">Prioridade: FenixFlix → FrostStream → Brazuca → Magnetflix. Somente vídeo HTTP/HTML5.</p><button class="sync-button" id="syncStremioButton" type="button">☁ Forçar sincronização do catálogo</button><p class="sync-caption" id="syncStremioStatus">Sincronização automática ao iniciar. Metadados ficam salvos mesmo quando um addon falha; a disponibilidade do vídeo é testada na hora da exibição.</p><details class="help"><summary>Como adicionar vídeos?</summary><p>Use <code>media/episodios/serie/01_03_titulo_2014.mp4</code>, <code>media/promos/2017/promo_ursos_sem_curso_01.mp4</code>, <code>media/vinhetas/2015/vinheta_cn_01.mp4</code> e <code>media/chamadas/2016/vem_ai_quadro_hahaha_01.mp4</code>. Para URLs diretas autorizadas, edite <code>data/fontes_externas.json</code>. Para addons Stremio com ID IMDb, consulte <code>data/stremio.json</code> e <code>data/stremio_series.json</code> e o README.</p></details><div class="lib-footer"><span id="sourceCount">0 locais · 0 externos</span><span id="generationLabel">00:00</span></div></details></section>
@@ -92,8 +93,27 @@
     </main>
     <footer class="footer"><div>CN <b>TIMELINE</b> <span>· PROJETO DE FÃ, NÃO OFICIAL</span></div><p>Recriação de uma grade de TV, não um arquivo histórico exato. Utilize mídias com autorização de reprodução.</p></footer>
   </div>
+  <div class="schedule-modal" id="scheduleModal" hidden>
+    <div class="schedule-modal-backdrop" data-close-schedule></div>
+    <section class="schedule-dialog" role="dialog" aria-modal="true" aria-labelledby="scheduleDialogTitle">
+      <header class="schedule-modal-header"><div><span class="caps">SUA PROGRAMAÇÃO</span><h2 id="scheduleDialogTitle">Monte seu catálogo diário</h2><p>Arraste seus desenhos favoritos para a programação.</p></div><button type="button" id="closeScheduleSettings" class="schedule-close" aria-label="Fechar">×</button></header>
+      <div class="schedule-modal-tabs" role="tablist" aria-label="Seções da programação"><button type="button" class="is-active" role="tab" aria-selected="true" data-schedule-tab="program">Programação</button><button type="button" role="tab" aria-selected="false" data-schedule-tab="shows">Desenhos <span id="scheduleShowCount">0</span></button></div>
+      <div class="schedule-modal-grid">
+        <section class="schedule-pane schedule-program-pane" id="scheduleProgramPanel" role="tabpanel" data-schedule-panel="program">
+          <label class="schedule-mode-field" for="catalogMode">Modo de programação<select id="catalogMode"><option value="normal">Normal · catálogo da época</option><option value="filtered">Filtrado · meus desenhos</option></select></label>
+          <p class="schedule-pane-hint">No modo filtrado, a grade usa os desenhos escolhidos. Quadros, bumpers, anúncios e promos continuam passando.</p>
+          <div class="schedule-dropzone" id="scheduleDropzone" tabindex="0" aria-label="Solte aqui os desenhos favoritos"><div class="dropzone-empty" id="scheduleDropHint"><span>＋</span><strong>Seus desenhos favoritos</strong><small>Arraste para cá ou toque em um desenho para adicionar</small></div><div class="schedule-selected-list" id="catalogShowList"></div></div>
+          <div class="schedule-modal-footer"><span id="catalogFilterStatus" aria-live="polite">Carregando desenhos do acervo…</span><button type="button" id="clearScheduleShows">Limpar seleção</button></div>
+        </section>
+        <section class="schedule-pane schedule-shows-pane" id="scheduleShowsPanel" role="tabpanel" data-schedule-panel="shows">
+          <div class="schedule-search-wrap"><label for="catalogFilterSearch">Desenhos no acervo</label><input id="catalogFilterSearch" type="search" maxlength="60" placeholder="Buscar desenho…"></div>
+          <div class="schedule-available-list" id="scheduleAvailableList"><div class="schedule-loading">Carregando desenhos…</div></div>
+        </section>
+      </div>
+    </section>
+  </div>
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1.6.13/dist/hls.min.js"></script>
-  <script src="/planner.js"></script>
-  <script src="/app.js"></script>
+  <script src="/planner.js?v=1.14"></script>
+  <script src="/app.js?v=1.14"></script>
 </body>
 </html>

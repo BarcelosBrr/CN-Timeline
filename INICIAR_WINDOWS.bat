@@ -14,7 +14,7 @@ if not defined PYTHON_EXE (
   exit /b 1
 )
 echo ========================================
-echo       CARTOON TIMELINE  v1.0  
+echo       CARTOON TIMELINE  v1.04
 echo ========================================
 echo Site local: http://localhost:3000
 echo Rede local: http://SEU-IP-LOCAL:3000

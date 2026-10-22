@@ -1,6 +1,24 @@
-# Cartoon Timeline - Atualização v1.02.1
+# Cartoon Timeline - Atualização v1.04
 
-Atualização incremental da v1.02.1. **Não apaga as 50 séries configuradas, o arquivo de episódios, os vídeos locais nem os addons.**
+Atualização incremental da v1.04. **Não apaga as séries configuradas, o arquivo de episódios, os vídeos locais nem os addons.**
+
+## Novidades v1.04
+
+1. A grade aceita episódios elegíveis do catálogo mesmo após uma falha temporária de addon; séries da lista histórica são cruzadas com o índice real e títulos válidos fora da lista seed têm fallback de seleção.
+2. O modo Filtrado ignora desenhos sem episódios elegíveis para o ano atual e volta à grade normal quando nenhuma escolha pode tocar, evitando uma tela de verificação sem fim.
+3. O popup Sua programação e suas cores acompanham a era selecionada; desenhos fora do ano ficam desativados na lista.
+4. Episódios exatos confirmados anteriormente continuam priorizados, mesmo depois de expirar o cache temporário.
+5. A proporção de episódios recentes e clássicos segue 70/30 e os intervalos tentam bumper, anúncio, promo, bumper e promo.
+
+## Histórico v1.03
+
+1. Cada intervalo entre episódios tenta incluir vinheta, anúncio e promo usando arquivos reais do acervo; nenhum comercial fictício é criado.
+2. O player prepara o próximo vídeo local durante a atração atual e aguarda os primeiros dados de vídeo antes de retirar a tela de carregamento.
+3. Quando um episódio Stremio falha, o canal tenta até cinco episódios alternativos ainda não verificados, priorizando a mesma série e respeitando os desenhos selecionados no modo filtrado.
+4. O modo **Filtrado** permite selecionar desenhos presentes no acervo e mantém quadros, vinhetas, anúncios, promos e chamadas.
+5. Descobrir vinhetas pesquisa mais resultados e termos equivalentes em português e inglês, com até 15 referências e revisão humana de data e direitos.
+
+Seekee não foi integrado: não foi encontrada uma API oficial/documentada para consultar streams. O projeto só deve usar fontes públicas autorizadas e URLs HTML5 explícitas.
 
 ## Alterações
 
