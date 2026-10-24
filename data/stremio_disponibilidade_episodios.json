@@ -13,7 +13,7 @@
   },
   "tt7713450:1:9": {
     "status": "played",
-    "checkedEpoch": 1792710572.3346436
+    "checkedEpoch": 1792713917.0104105
   },
   "tt3061046:4:2": {
     "status": "candidate",
@@ -56,8 +56,8 @@
     "checkedEpoch": 1791976600.4493246
   },
   "tt4215734:1:1": {
-    "status": "candidate",
-    "checkedEpoch": 1792574758.8196783
+    "status": "played",
+    "checkedEpoch": 1792836594.9773018
   },
   "tt2293002:8:5": {
     "status": "played",
@@ -422,5 +422,45 @@
   "tt2771780:2:11": {
     "status": "candidate",
     "checkedEpoch": 1792710993.6067884
+  },
+  "tt3061046:1:50": {
+    "status": "played",
+    "checkedEpoch": 1792713652.9426255
+  },
+  "tt2771780:4:7": {
+    "status": "candidate",
+    "checkedEpoch": 1792713918.2927094
+  },
+  "tt0168366:7:12": {
+    "status": "played",
+    "checkedEpoch": 1792801447.3652768
+  },
+  "tt2771780:1:13": {
+    "status": "played",
+    "checkedEpoch": 1792802844.726719
+  },
+  "tt0115157:2:5": {
+    "status": "played",
+    "checkedEpoch": 1792804297.9069157
+  },
+  "tt7713450:3:25": {
+    "status": "candidate",
+    "checkedEpoch": 1792804744.9169545
+  },
+  "tt1305826:6:22": {
+    "status": "played",
+    "checkedEpoch": 1792805702.1653545
+  },
+  "tt1710308:6:16": {
+    "status": "candidate",
+    "checkedEpoch": 1792808062.5423543
+  },
+  "tt0312109:4:1": {
+    "status": "played",
+    "checkedEpoch": 1792835876.059626
+  },
+  "tt3061046:1:23": {
+    "status": "candidate",
+    "checkedEpoch": 1792850190.2608173
   }
 }

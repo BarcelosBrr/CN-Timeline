@@ -3,7 +3,7 @@ Arquivos locais, URLs diretas autorizadas e catálogo opt-in de players em ifram
 """
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlsplit, quote
+from urllib.parse import unquote, urlsplit, quote, parse_qs
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import argparse
 import gzip
@@ -1439,8 +1439,13 @@ class Handler(SimpleHTTPRequestHandler):
             confirmed = (read_json('playback_confirmed.json') or {}).get('shows', {})
             if not isinstance(verified, dict): verified = {}
             if not isinstance(confirmed, dict): confirmed = {}
-            episodes = []
-            per_episode=read_json(EPISODE_AVAILABILITY_FILE) or {}
+            query=parse_qs(urlsplit(self.path).query)
+            try:
+                page=max(1,int(query.get('page',['1'])[0]))
+                page_size=max(1,min(500,int(query.get('limit',['500'])[0])))
+            except (TypeError,ValueError):
+                return self._json_result({'error':'Parâmetros de paginação inválidos.'},400)
+            eligible_records=[]
             for x in records:
                 if not isinstance(x, dict) or x.get('kind') != 'episode' or x.get('source') != 'stremio':
                     continue
@@ -1448,6 +1453,12 @@ class Handler(SimpleHTTPRequestHandler):
                     continue
                 if not isinstance(x.get('duration'), (int,float)) or not x['duration'] > 0:
                     continue
+                eligible_records.append(x)
+            total=len(eligible_records)
+            page_records=eligible_records[(page-1)*page_size:page*page_size]
+            episodes = []
+            per_episode=read_json(EPISODE_AVAILABILITY_FILE) or {}
+            for x in page_records:
                 ep = dict(x)
                 imdb = str(ep.get('imdbId', ''))
                 show_confirmation = confirmed.get(imdb) or {}
@@ -1465,8 +1476,9 @@ class Handler(SimpleHTTPRequestHandler):
                     ep['durationVerified'] = False
                     ep['durationSource'] = 'previsão saneada'
                 episodes.append(ep)
-            return self._json_result({'media': episodes, 'total': len(episodes),
-                'catalogados':len(episodes),'temporariamenteSemFonte':sum(ep.get('streamAvailability')=='unavailable' for ep in episodes),
+            return self._json_result({'media': episodes, 'total': total, 'page':page,
+                'limit':page_size,'pages':(total+page_size-1)//page_size,
+                'catalogados':total,'temporariamenteSemFonte':sum(ep.get('streamAvailability')=='unavailable' for ep in episodes),
                 'fonteEncontrada':sum(ep.get('streamAvailability') in ('candidate','played') for ep in episodes),
                 'note':'Séries sem episódios não entram no catálogo de exibição; episódios com falha recente ficam fora da próxima grade.'})
         if route == '/api/catalog':

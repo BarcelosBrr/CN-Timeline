@@ -1,104 +1,104 @@
 {
   "films": {
     "tt2235542": {
-      "available": true,
-      "checkedAt": 1792711015.4866798,
-      "provider": "FenixFlix"
+      "available": false,
+      "checkedAt": 1792800713.9972878,
+      "provider": null
     },
     "tt2423422": {
       "available": true,
-      "checkedAt": 1792711016.9987335,
+      "checkedAt": 1792800715.7046456,
       "provider": "FenixFlix"
     },
     "tt3025994": {
-      "available": true,
-      "checkedAt": 1792711018.1740534,
-      "provider": "FenixFlix"
+      "available": false,
+      "checkedAt": 1792800719.0032184,
+      "provider": null
     },
     "tt3919322": {
       "available": true,
-      "checkedAt": 1792711019.3879864,
+      "checkedAt": 1792800719.7256117,
       "provider": "FenixFlix"
     },
     "tt4006794": {
       "available": true,
-      "checkedAt": 1792711020.404316,
+      "checkedAt": 1792800722.411802,
       "provider": "FenixFlix"
     },
     "tt1490017": {
-      "available": true,
-      "checkedAt": 1792711021.4821572,
-      "provider": "FenixFlix"
+      "available": false,
+      "checkedAt": 1792800732.2405994,
+      "provider": null
     },
     "tt4189260": {
-      "available": true,
-      "checkedAt": 1792711022.754508,
-      "provider": "FenixFlix"
+      "available": false,
+      "checkedAt": 1792800737.7663262,
+      "provider": null
     },
     "tt4717798": {
-      "available": true,
-      "checkedAt": 1792711032.190797,
-      "provider": "Magnetflix"
+      "available": false,
+      "checkedAt": 1792800742.2596347,
+      "provider": null
     },
     "tt4215766": {
       "available": true,
-      "checkedAt": 1792711032.941718,
-      "provider": "FenixFlix"
+      "checkedAt": 1792800758.884842,
+      "provider": "Magnetflix"
     },
     "tt5836262": {
       "available": false,
-      "checkedAt": 1792711042.9118059,
+      "checkedAt": 1792800795.5840237,
       "provider": null
     },
     "tt5251438": {
-      "available": true,
-      "checkedAt": 1792711046.3753934,
-      "provider": "Magnetflix"
+      "available": false,
+      "checkedAt": 1792800795.7856152,
+      "provider": null
     },
     "tt5548284": {
-      "available": true,
-      "checkedAt": 1792711052.4642336,
-      "provider": "FenixFlix"
+      "available": false,
+      "checkedAt": 1792800795.9873629,
+      "provider": null
     },
     "tt4116284": {
-      "available": true,
-      "checkedAt": 1792711054.027383,
-      "provider": "FenixFlix"
+      "available": false,
+      "checkedAt": 1792800796.1892338,
+      "provider": null
     },
     "tt3014284": {
-      "available": true,
-      "checkedAt": 1792711058.0819604,
-      "provider": "Magnetflix"
+      "available": false,
+      "checkedAt": 1792800796.3909695,
+      "provider": null
     },
     "tt6182908": {
-      "available": true,
-      "checkedAt": 1792711061.2165112,
-      "provider": "Magnetflix"
+      "available": false,
+      "checkedAt": 1792800796.5928104,
+      "provider": null
     },
     "tt10327712": {
-      "available": true,
-      "checkedAt": 1792711064.3899324,
-      "provider": "Magnetflix"
+      "available": false,
+      "checkedAt": 1792800796.7945297,
+      "provider": null
     },
     "tt3513498": {
-      "available": true,
-      "checkedAt": 1792711068.2243533,
-      "provider": "Magnetflix"
+      "available": false,
+      "checkedAt": 1792800796.9963071,
+      "provider": null
     },
     "tt12093878": {
-      "available": true,
-      "checkedAt": 1792711071.7744164,
-      "provider": "Magnetflix"
+      "available": false,
+      "checkedAt": 1792800797.1979127,
+      "provider": null
     },
     "tt3152592": {
-      "available": true,
-      "checkedAt": 1792711075.5024762,
-      "provider": "Magnetflix"
+      "available": false,
+      "checkedAt": 1792800797.3996089,
+      "provider": null
     },
     "tt2162709": {
-      "available": true,
-      "checkedAt": 1792711014.1057575,
-      "provider": "FenixFlix"
+      "available": false,
+      "checkedAt": 1792800711.417598,
+      "provider": null
     }
   }
 }

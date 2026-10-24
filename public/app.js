@@ -279,7 +279,7 @@ function renderGuide(now){
    }
    const message=indexed?`${indexed} episódios cadastrados; ${eligibleCount} episódios e ${eligibleNames.size} séries elegíveis para ${dateKey(now)}. Modo: ${catalogMode}${adultMode?' · Adult Swim ativo':''}.`+
      (eligibleCount?' A grade deveria conter episódios; confira esses números em Diagnóstico da biblioteca se a tela persistir.':'Verifique as datas dos episódios e o ano selecionado.'):
-     'O índice de episódios está sendo carregado do disco local.';
+     (episodeIndexLoadError||'Conectando ao servidor e carregando o índice de episódios…');
    $('guide').innerHTML='<div class="guide-pending" role="status"><strong>Preparando a programação de '+year+'…</strong><p>'+message+'</p></div>'+
       phases.map(([hour,title])=>'<div class="guide-row guide-preview"><span class="time">'+hour+'</span><div><div class="name">'+title+'</div><div class="detail">Aguardando metadados elegíveis · '+year+'</div></div></div>').join('');
    return;
@@ -343,7 +343,8 @@ function renderLibrary(){
  const good=chosen.filter(a=>a.enabled!==false&&a.duration>0&&a.streamAvailability!=='unavailable');
  const pending=chosen.filter(a=>a.enabled===false||!a.duration||a.streamAvailability==='unavailable');
  const remoteCount=good.filter(a=>a.source==='stremio').length;
- $('mediaLibrarySummary').textContent=`${y} · ${good.length-remoteCount} mídias locais/URLs · ${remoteCount} episódios Stremio cadastrados e não bloqueados · ${pending.length} pendentes`; 
+ $('mediaLibrarySummary').textContent=`${y} · ${good.length-remoteCount} mídias locais/URLs · ${remoteCount} episódios Stremio cadastrados e não bloqueados · ${pending.length} pendentes`;
+ if(!fastEpisodeIndexLoaded&&episodeIndexLoadError)$('mediaLibrarySummary').textContent+=' · '+episodeIndexLoadError;
  const kinds={episode:'📺',movie:'🍿',call:'📢',promo:'📣',bumper:'✳️',ad:'🛍️',short:'🎬',special:'🎉'};
  $('mediaLibraryList').innerHTML=(chosen.slice(0,25).map(a=>`<div class="media-library-row"><span>${kinds[a.kind]||'▶'}</span><div><strong>${escapeHTML(a.name)}</strong><small>${escapeHTML(a.kind)} · ${a.duration?Math.ceil(a.duration)+'s':'sem duração'} · ${escapeHTML((a.years||[]).join(', ')||a.releaseDate?.slice(0,4)||'sem época')}</small></div><span class="media-state ${a.enabled===false||!a.duration?'pending':'ok'}">${a.enabled===false||!a.duration?'PENDENTE':a.source==='stremio'?(a.streamAvailability==='played'?'REPRODUZIDO':a.streamAvailability==='candidate'?'FONTE CANDIDATA':'A VERIFICAR'):'OK'}</span></div>`).join('')||'<div class="media-library-empty">Nenhum vídeo desta categoria nesse ano.</div>')+(chosen.length>25?`<div class="media-library-empty">+ ${chosen.length-25} outros arquivos</div>`:'');
 }
@@ -797,36 +798,54 @@ function syncPlayback(now,force=false){if(!started)return;const c=playingAt(now)
 }
 let catalogRequestInFlight=null;
 let fastEpisodeIndexLoaded=false;
+let episodeIndexLoadError='';
+let episodeIndexNextPage=1,episodeIndexReceived=0,episodeIndexTotal=null;
 async function fetchEpisodeIndex(force=false){
   // Endpoint leve: lê SOMENTE os metadados salvos, sem escanear MP4 nem chamar addons.
   // Assim 5.000 episódios podem gerar a grade imediatamente, antes do scan local.
   if(fastEpisodeIndexLoaded && !force)return;
-  // A resposta pode ter vários megabytes; em celulares e Wi-Fi lento, 7s
-  // abortava a transferência antes de o navegador conseguir montar o guia.
-  const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),45000);
+  if(force){episodeIndexNextPage=1;episodeIndexReceived=0;episodeIndexTotal=null;fastEpisodeIndexLoaded=false}
   try{
-    const response=await fetch('/api/catalog/episodes',{cache:'no-store',signal:controller.signal});
-    if(!response.ok)throw Error('HTTP '+response.status);
-    const result=await response.json();
-    const episodes=Array.isArray(result.media)?result.media.filter(x=>x&&x.path&&x.kind==='episode'):[];
-    if(episodes.length){
-      const known=new Map(catalog.map(x=>[x.id,x]));
+    const known=new Map(catalog.map(x=>[x.id,x]));
+    const limit=500;
+    let page=episodeIndexNextPage,total=episodeIndexTotal,received=episodeIndexReceived;
+    while(total===null||received<total){
+      let result=null,lastError=null;
+      for(let attempt=0;attempt<3&&!result;attempt++){
+        const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
+        try{
+          const response=await fetch(`/api/catalog/episodes?page=${page}&limit=${limit}`,{cache:'no-store',signal:controller.signal});
+          if(!response.ok)throw Error(`HTTP ${response.status}`);
+          result=await response.json();
+        }catch(error){lastError=error;if(attempt<2)await new Promise(resolve=>setTimeout(resolve,700*(attempt+1)))}
+        finally{clearTimeout(timer)}
+      }
+      if(!result)throw lastError||Error('resposta vazia do servidor');
+      const episodes=Array.isArray(result.media)?result.media.filter(x=>x&&x.path&&x.kind==='episode'):[];
+      total=Number.isFinite(Number(result.total))?Number(result.total):received+episodes.length;
+      if(!episodes.length&&received<total)throw Error(`página ${page} vazia`);
       episodes.forEach(x=>known.set(x.id,x));
+      received+=episodes.length;
+      episodeIndexTotal=total;episodeIndexReceived=received;episodeIndexNextPage=page+1;
       catalog=[...known.values()];
-      // Populate the library before the CPU-heavy daily schedule is built;
-      // this keeps the mobile UI informative even on slower devices.
       $('mediaCount').textContent=catalog.length;
       renderLibrary();
-      renderCatalogFilter();
-      if(!started || !schedule.some(e=>e.isMain&&e.asset))buildSchedule(new Date());
-      $('notice').textContent=`Guia gerado com ${episodes.length} episódios catalogados. As fontes são verificadas ao sintonizar.`;
+      $('notice').textContent=`Carregando episódios do acervo: ${Math.min(received,total)} de ${total}…`;
+      if(page===1)renderCatalogFilter();
+      page++;
     }
-    // Uma resposta vazia não significa que o índice esteja carregado. Não
-    // marcar como concluído permite que a recuperação automática tente de novo.
-    fastEpisodeIndexLoaded=episodes.length>0;
+    fastEpisodeIndexLoaded=total>0;
+    episodeIndexLoadError=total>0?'':'O servidor informou que o índice não contém episódios.';
+    if(total>0){
+      renderCatalogFilter();
+      if(!started||!schedule.some(e=>e.isMain&&e.asset))buildSchedule(new Date());
+      $('notice').textContent=`Guia gerado com ${total} episódios catalogados. As fontes são verificadas ao sintonizar.`;
+    }else renderLibrary();
   }catch(error){
-    // Compatível com versões antigas do servidor: cai para /api/catalog.
-  }finally{clearTimeout(timer)}
+    episodeIndexLoadError=`Falha ao receber o índice (${String(error?.message||error)}). Nova tentativa automática em até 30 s.`;
+    renderLibrary();
+    $('notice').textContent=episodeIndexLoadError;
+  }
 }
 async function refreshCatalog(){
   // Protege o primeiro carregamento contra scans de vídeos muito lentos e
@@ -1101,7 +1120,7 @@ function init(){for(let y=MIN_YEAR;y<=MAX_YEAR;y++){const btn=document.createEle
   // Recuperação sem apertar botões após falha no catálogo inicial.
   // Promos e bumpers podem preencher catalog.length mesmo quando os episódios
   // ainda não chegaram. Recuperar com base na presença de episódios reais.
-  setInterval(()=>{if(!catalog.some(x=>x.kind==='episode'&&x.path))refreshCatalog()},30000);
+  setInterval(()=>{if(!fastEpisodeIndexLoaded)refreshCatalog()},30000);
   setInterval(()=>{const now=new Date();if(dateKey(now)!==lastDateKey){
     if(started && activeSource && player.style.display!=='none' && !player.ended && player.readyState>=1 && Number.isFinite(player.duration) && player.currentTime<player.duration-.4){
       $('syncLabel').textContent='Terminando vídeo da noite anterior, sem cortar na virada';return;
